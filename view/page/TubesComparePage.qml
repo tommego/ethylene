@@ -401,6 +401,7 @@ Item {
 
                         property int maxDisplayTemp: 1100
                         property int minDisplayTemp: 700
+<<<<<<< HEAD
                         Behavior on maxDisplayTemp{
                             PropertyAnimation{
                                 properties: "maxDisplayTemp"
@@ -415,6 +416,8 @@ Item {
                                 duration: 300
                             }
                         }
+=======
+>>>>>>> 1f89b31770f3ce809a62d97eb589b6b86e98caf6
 
                         UpDownBox{
                             id:maxUpdownBox
