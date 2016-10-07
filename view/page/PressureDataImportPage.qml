@@ -14,6 +14,17 @@ Item {
     ]
     property date globalDate: new Date();
 
+    ListModel{
+        id:pressureDatModel
+        Component.onCompleted: {
+            for(var a = 0; a<48; a++){
+                append({
+                           "value":"0"
+                       });
+            }
+        }
+    }
+
     Column{
         id:mainCol
         anchors.fill: parent
@@ -85,6 +96,13 @@ Item {
                 imgSrc: "qrc:/imgs/icons/add.png"
                 anchors.rightMargin: 20
                 bgColor: "#12ccef"
+                onBngClicked: {
+                    var data = [];
+                    for(var a in pressureDatModel){
+                        data.push(pressureDatModel.get(a).value);
+                    }
+                    server.pushPressureData(currentFornace,data,globalDate);
+                }
             }
         }
 
@@ -169,6 +187,7 @@ Item {
                                 hoverEnabled: true
                                 onClicked: {
                                     //TODO
+                                    calendarDialog.open();
                                 }
                             }
                         }
@@ -195,30 +214,30 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             textSize: 20
                             imgSrc: "qrc:/imgs/icons/icon_pressure.png"
-                            text: "压强"
+                            text: "压强(pa)"
                             enabled: false
                             width: 200
                             height: 50
                         }
 
-                        CheckBox{
-                            anchors.verticalCenter: parent.verticalCenter
-                            style: CheckBoxStyle {
-                                indicator: Rectangle {
-                                        implicitWidth: 24
-                                        implicitHeight: 24
-                                        radius: 2
-                                        border.color: control.activeFocus ? "#12aadf" : "#aaaaaa"
-                                        border.width: 1
+//                        CheckBox{
+//                            anchors.verticalCenter: parent.verticalCenter
+//                            style: CheckBoxStyle {
+//                                indicator: Rectangle {
+//                                        implicitWidth: 24
+//                                        implicitHeight: 24
+//                                        radius: 2
+//                                        border.color: control.activeFocus ? "#12aadf" : "#aaaaaa"
+//                                        border.width: 1
 
-                                        Image {
-                                            source: "qrc:/imgs/icons/icon_choose.png"
-                                            anchors.centerIn: parent
-                                            opacity: control.checked?1:0.2
-                                        }
-                                }
-                            }
-                        }
+//                                        Image {
+//                                            source: "qrc:/imgs/icons/icon_choose.png"
+//                                            anchors.centerIn: parent
+//                                            opacity: control.checked?1:0.2
+//                                        }
+//                                }
+//                            }
+//                        }
                     }
                 }
             }
@@ -246,7 +265,7 @@ Item {
                     id:gridCol
 
                     Repeater{
-                        model: 48
+                        model: pressureDatModel
                         delegate: Rectangle{
                             width: gridContent.width
                             height: 40
@@ -283,17 +302,17 @@ Item {
                                             color: "#454545"
                                         }
 
-                                        Image {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            source: bntSubCanlendar.containsMouse && bntSubCanlendar.pressed?"qrc:/imgs/icons/button_time-_press-.png":
-                                                                                                              bntSubCanlendar.containsMouse?"qrc:/imgs/icons/button_time_hover.png":
-                                                                                                                                             "qrc:/imgs/icons/buttontime_normai.png"
-                                            MouseArea{
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                id: bntSubCanlendar
-                                            }
-                                        }
+//                                        Image {
+//                                            anchors.verticalCenter: parent.verticalCenter
+//                                            source: bntSubCanlendar.containsMouse && bntSubCanlendar.pressed?"qrc:/imgs/icons/button_time-_press-.png":
+//                                                                                                              bntSubCanlendar.containsMouse?"qrc:/imgs/icons/button_time_hover.png":
+//                                                                                                                                             "qrc:/imgs/icons/buttontime_normai.png"
+//                                            MouseArea{
+//                                                anchors.fill: parent
+//                                                hoverEnabled: true
+//                                                id: bntSubCanlendar
+//                                            }
+//                                        }
                                     }
 
                                 }
@@ -310,9 +329,15 @@ Item {
                                             width: 200
                                             height: 30
                                             anchors.verticalCenter: parent.verticalCenter
+                                            text: value
+                                            validator: IntValidator {bottom: 0; top: 1000000;}
 
                                             placeholderText: "输入压强值"
                                             horizontalAlignment: TextInput.AlignHCenter
+
+                                            onTextChanged:{
+                                                pressureDatModel.setProperty(index,"value",text);
+                                            }
 
                                             style: TextFieldStyle{
                                                 textColor: "#454545"
@@ -328,24 +353,24 @@ Item {
                                             }
                                         }
 
-                                        CheckBox{
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            style: CheckBoxStyle {
-                                                indicator: Rectangle {
-                                                        implicitWidth: 24
-                                                        implicitHeight: 24
-                                                        radius: 2
-                                                        border.color: control.activeFocus ? "#12aadf" : "#aaaaaa"
-                                                        border.width: 1
+//                                        CheckBox{
+//                                            anchors.verticalCenter: parent.verticalCenter
+//                                            style: CheckBoxStyle {
+//                                                indicator: Rectangle {
+//                                                        implicitWidth: 24
+//                                                        implicitHeight: 24
+//                                                        radius: 2
+//                                                        border.color: control.activeFocus ? "#12aadf" : "#aaaaaa"
+//                                                        border.width: 1
 
-                                                        Image {
-                                                            source: "qrc:/imgs/icons/icon_choose.png"
-                                                            anchors.centerIn: parent
-                                                            opacity: control.checked?1:0.2
-                                                        }
-                                                }
-                                            }
-                                        }
+//                                                        Image {
+//                                                            source: "qrc:/imgs/icons/icon_choose.png"
+//                                                            anchors.centerIn: parent
+//                                                            opacity: control.checked?1:0.2
+//                                                        }
+//                                                }
+//                                            }
+//                                        }
                                     }
 
                                 }
@@ -365,5 +390,17 @@ Item {
 //        color: "#344750"
 
 //    }
+
+    CustomDialog{
+        id:calendarDialog
+        title: "选择日期"
+        content:Calendar{
+            id:calendar
+            anchors.fill: parent
+        }
+        onAccepted: {
+            globalDate = calendar.selectedDate;
+        }
+    }
 
 }

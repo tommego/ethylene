@@ -17,10 +17,6 @@ Item {
     property string fontColorNormal: '#333333'
     property string fontColorTip: "#999999"
 
-//    property bool showTubeInCompareLines: showTubeInOptionSwitch.checked
-//    property bool showTubeOutCompareLines: showTubeOutOptionSwitch.checked
-//    property bool showTubeCOTCompareLines: showTubeCOTOptionSwitch.checked
-
     property var tubeInLineStyle: Qt.SolidLine
     property var tubeOutLIneStyle: Qt.DashLine
     property var tubeCOTLineStyle: Qt.DashDotDotLine
@@ -28,8 +24,11 @@ Item {
     property var tubeInResultLines:[]
     property var tubeOutResultLines:[]
     property var tubeCOTResultLines: []
+    property var diagnoseResultLines: []
+    property var pressureResultLines: []
 
     property int currentEdittingTube:0
+    property int currentFuranceNum: 5
 
     property var colorSet:[
         "#FF0000","#FF1493","#104E8B","#080808","#00688B","#00CED1","#3A5FCD","#404040",
@@ -39,52 +38,113 @@ Item {
         "#636363","#548B54","#8B6508","#CD2990","#B9D3EE","#8B8378","#8B5A2B","#8470FF",
         "#32CD32","#27408B","#4B0082","#6B8E23","#8B0A50","#8968CD","#708090","#7A67EE",
     ]
-//    Component.onCompleted: {
 
-//        for(var a = 0; a<selectedTubeListModel.count; a++){
+    function refresh(){
 
-//            var myAxisX = chartView.axisX(lineSeries);
-//            var myAxisY = chartView.axisY(lineSeries);
-//            var lineIn = chartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
-//            var lineOut = chartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
-//            var lineCOT = chartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
+        // remove all lines
+        tubeChartView.removeAllSeries();
+        analysisChartView.removeAllSeries();
+        pressureChartView.removeAllSeries();
 
-//            var mdatas = [];
-//            for(var b = 0; b<20; b++){
-//                var mdata = {};
-//                mdata.tubeInTemp = 860 + Math.random()*20;
-//                mdata.tubeOutTemp = 920 + Math.random()*20;
-//                mdata.tubeCOTTemp = 820 + Math.random()*20;
+        tubeInResultLines = [];
+        tubeOutResultLines = [];
+        tubeCOTResultLines = [];
+        diagnoseResultLines = [];
+        pressureResultLines = [];
 
-//                var day = (b+1)>10? Number(b+1).toString():"0"+Number(b+1).toString();
+        for(var a = 0; a<selectedTubeListModel.count; a++){
 
-//                mdata.time = new Date("2016-01-"+day+" 00:00:00");
-//                mdata.lineColor = selectedTubeListModel.get(a).displayColor;
-//                mdatas.push(mdata);
+            var fromDateStr = fromDatPicker.year + "-" +
+                    fromDatPicker.month + "-" +
+                    fromDatPicker.day + " 00:00:00";
+            var toDateStr = toDatPicker.year + "-" +
+                    toDatPicker.month + "-" +
+                    toDatPicker.day + " 23:59:59"
 
-//                //add spot
-//                lineIn.append(mdata.time,mdata.tubeInTemp);
-//                lineOut.append(mdata.time,mdata.tubeOutTemp);
-//                lineCOT.append(mdata.time,mdata.tubeCOTTemp);
+            var fDate = new Date(fromDateStr);
+            var tDate = new Date(toDateStr);
 
-//                //set line color
-//                lineIn.color = selectedTubeListModel.get(a).displayColor;
-//                lineOut.color = selectedTubeListModel.get(a).displayColor;
-//                lineCOT.color = selectedTubeListModel.get(a).displayColor;
+            console.log("date:",fDate,",",tDate);
 
-//                //set line style
-//                lineOut.style = tubeInLineStyle;
-//                lineCOT.style = tubeOutLIneStyle;
-//                lineIn.style = tubeCOTLineStyle;
-//            }
-//            //restore lines to further control
-//            tubeInResultLines.push(lineIn);
-//            tubeOutResultLines.push(lineOut);
-//            tubeCOTResultLines.push(lineCOT);
+            var result = server.compare_datas(currentFuranceNum, selectedTubeListModel.get(a).tubeNum, fDate, tDate);
+            var resultPressue = server.pressureData(currentFuranceNum, selectedTubeListModel.get(a).tubeNum, fDate, tDate);
+//            console.log("*********************",resultPressue.length);
+            console.log("result:",result.length);
 
-//        }
-////        xAxis.tickCount = tubeInResultLines[0].count>15?15:tubeInResultLines[0].count
-//    }
+            var axisXDiagnose = analysisChartView.axisX(lineSeries);
+            var axisYDiagnose = analysisChartView.axisY(lineSeries);
+
+            var myAxisX = tubeChartView.axisX(lineSeries1);
+            var myAxisY = tubeChartView.axisY(lineSeries1);
+
+            var axisXPressure = pressureChartView.axisX(lineSeries2);
+            var axisYPressure = pressureChartView.axisY(lineSeries2);
+
+            var lineIn = tubeChartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
+            var lineOut = tubeChartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
+            var lineCOT = tubeChartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
+
+            var lineDiagnose = analysisChartView.createSeries(ChartView.SeriesTypeLine,
+                                                              "T"+selectedTubeListModel.get(a).tubeNum,
+                                                              axisXDiagnose,
+                                                              axisYDiagnose);
+            var linePressures = pressureChartView.createSeries(ChartView.SeriesTypeLine,
+                                                           "T"+selectedTubeListModel.get(a).tubeNum,
+                                                           axisXPressure, axisYPressure);
+
+            fromDate = new Date(result[0].time);
+            toDate = new Date(result[result.length-1].time);
+
+            for(var b = 0; b<result.length; b++){
+
+                var mdata = {};
+                mdata.tubeInTemp = result[b].temp_in;
+                mdata.tubeOutTemp = result[b].temp_out;
+                mdata.tubeCOTTemp = result[b].temp_cot;
+                mdata.time = new Date(result[b].time);
+                console.log(mdata.time,result[b].time);
+                mdata.lineColor = selectedTubeListModel.get(a).displayColor;
+
+                //add spot
+                lineIn.append(mdata.time,mdata.tubeInTemp);
+                lineOut.append(mdata.time,mdata.tubeOutTemp);
+                lineCOT.append(mdata.time,mdata.tubeCOTTemp);
+
+                lineDiagnose.append(mdata.time, (mdata.tubeOutTemp/mdata.tubeInTemp));
+
+                //set line color
+                lineIn.color = selectedTubeListModel.get(a).displayColor;
+                lineOut.color = selectedTubeListModel.get(a).displayColor;
+                lineCOT.color = selectedTubeListModel.get(a).displayColor;
+
+                lineDiagnose.color = selectedTubeListModel.get(a).displayColor;
+
+                //set line style
+                lineOut.style = tubeInLineStyle;
+                lineCOT.style = tubeOutLIneStyle;
+                lineIn.style = tubeCOTLineStyle;
+            }
+
+            for(var c = 0; c< resultPressue.length; c++){
+                var pdata = {};
+                pdata.time = new Date(resultPressue[c].time);
+                pdata.value = resultPressue[c].value;
+                linePressures.append(pdata.time,pdata.value);
+                linePressures.color = selectedTubeListModel.get(a).displayColor;
+                console.log(pdata.time,pdata.value);
+            }
+
+            //restore lines to further control
+            tubeInResultLines.push(lineIn);
+            tubeOutResultLines.push(lineOut);
+            tubeCOTResultLines.push(lineCOT);
+
+            diagnoseResultLines.push(lineDiagnose)
+
+            pressureResultLines.push(linePressures)
+        }
+    }
+
 
     //selected tube list model
     ListModel{
@@ -207,16 +267,20 @@ Item {
                                 checked: selected
 
                                 onCheckedChanged: {
-
-                                    if(showTubeInCompareLines)
+                                    if(tubeInResultLines[index])
                                         tubeInResultLines[index].visible = checked;
 
-                                    if(showTubeOutCompareLines)
+                                    if(tubeOutResultLines[index])
                                         tubeOutResultLines[index].visible = checked;
 
-                                    if(showTubeCOTCompareLines)
+                                    if(tubeCOTResultLines[index])
                                         tubeCOTResultLines[index].visible = checked;
-//                                        tubeCOTResultLines[index].visible = checked;
+
+                                    if(diagnoseResultLines[index])
+                                        diagnoseResultLines[index].visible = checked;
+
+                                    if(pressureResultLines[index])
+                                        pressureResultLines[index].visible = checked;
 
                                 }
 
@@ -356,6 +420,9 @@ Item {
                             imgSrc: "qrc:/imgs/icons/bnt_comparer.png"
                             bgColor: "#12ccef"
                             id:analisisBnt
+                            onBngClicked: {
+                                refresh();
+                            }
                         }
 
                         RoundIconButton{
@@ -365,7 +432,10 @@ Item {
                             text: "导出图片"
                             bgColor: "#ff7700"
                             onBngClicked: {
-                                saveImageDialog.open();
+                                chartViewsItem.grabToImage(function(result){
+                                    var url = server.getSaveFilePath();
+                                    result.saveToFile(url);
+                                });
                             }
                         }
                     }
@@ -385,6 +455,7 @@ Item {
                             width: chartsItem.width-80
                             x:40
                             height: chartsCol.height
+                            id: chartViewsItem
 
                             Glow{
                                 anchors.fill: chartsCol
@@ -407,28 +478,223 @@ Item {
                                 ChartView{
                                     id:analysisChartView
                                     width: parent.width
-                                    height: 300
-                                    title: "入管温度／COT温度         ５号炉"
+                                    height: 500
+                                    title: "入管温度／COT温度"
                                     titleColor: fontColorNormal
                                     titleFont.pixelSize: 20
+                                    antialiasing: true
+                                    legend.visible: false
+                                    property var maxValue: 2
+                                    property var minValue: 0
+
+                                    Behavior on maxValue{
+                                        PropertyAnimation{
+                                            properties: "maxValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+                                    Behavior on minValue{
+                                        PropertyAnimation{
+                                            properties: "minValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.top: analysisChartView.top
+                                        anchors.topMargin: 15
+                                        upEnable: analysisChartView.maxValue<5
+                                        downEnable: analysisChartView.minValue<analysisChartView.maxValue
+                                        onAboutToDown: {
+                                            analysisChartView.maxValue -=0.2;
+                                        }
+                                        onAboutToUp: {
+                                            analysisChartView.maxValue += 0.2;
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.bottom: analysisChartView.bottom
+                                        anchors.bottomMargin: 15
+                                        upEnable: analysisChartView.minValue<analysisChartView.maxValue
+                                        downEnable: analysisChartView.minValue>0
+                                        onAboutToDown: {
+                                            analysisChartView.minValue -=0.2;
+                                        }
+                                        onAboutToUp: {
+                                            analysisChartView.minValue += 0.2;
+                                        }
+                                    }
+
+                                    ValueAxis{
+                                        id:yAxis
+                                        min: analysisChartView.minValue
+                                        max: analysisChartView.maxValue
+                                        tickCount: 10
+//                                        labelFormat: "%0.00f"
+                                    }
+                                    DateTimeAxis{
+                                        id:xAxis
+                                        min:fromDate
+                                        max: toDate
+                                        format: "yy/MM/dd"
+                                    }
+                                    LineSeries{
+                                        id:lineSeries
+                                        axisX: xAxis
+                                        axisY: yAxis
+                                    }
                                 }
 
                                 ChartView{
                                     id:tubeChartView
                                     width: parent.width
                                     height: 600
-                                    title: "温度趋势 ５号炉"
+                                    title: "温度曲线趋势"
                                     titleFont.pixelSize: 20
                                     titleColor: fontColorNormal
+                                    antialiasing: true
+                                    legend.visible: false
+
+                                    property var maxValue: 1200
+                                    property var minValue: 700
+
+                                    Behavior on maxValue{
+                                        PropertyAnimation{
+                                            properties: "maxValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+                                    Behavior on minValue{
+                                        PropertyAnimation{
+                                            properties: "minValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.top: tubeChartView.top
+                                        anchors.topMargin: 15
+                                        upEnable: tubeChartView.maxValue<1500
+                                        downEnable: tubeChartView.minValue<tubeChartView.maxValue
+                                        onAboutToDown: {
+                                            tubeChartView.maxValue -=50;
+                                        }
+                                        onAboutToUp: {
+                                            tubeChartView.maxValue += 50;
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.bottom: tubeChartView.bottom
+                                        anchors.bottomMargin: 15
+                                        upEnable: tubeChartView.minValue<tubeChartView.maxValue
+                                        downEnable: tubeChartView.minValue>0
+                                        onAboutToDown: {
+                                            tubeChartView.minValue -=50;
+                                        }
+                                        onAboutToUp: {
+                                            tubeChartView.minValue += 50;
+                                        }
+                                    }
+
+                                    ValueAxis{
+                                        id:yAxis1
+                                        min: tubeChartView.minValue
+                                        max: tubeChartView.maxValue
+                                        tickCount: 10
+                                        labelFormat: "%.0f"
+                                    }
+                                    DateTimeAxis{
+                                        id:xAxis1
+                                        min:fromDate
+                                        max: toDate
+                                        format: "yy/MM/dd"
+                                    }
+                                    LineSeries{
+                                        id:lineSeries1
+                                        axisX: xAxis1
+                                        axisY: yAxis1
+                                    }
                                 }
 
                                 ChartView{
                                     id:pressureChartView
                                     width: parent.width
-                                    height: 300
-                                    title: "压力趋势 ５号炉"
+                                    height: 500
+                                    title: "压力趋势"
                                     titleFont.pixelSize: 20
                                     titleColor: fontColorNormal
+                                    antialiasing: true
+                                    legend.visible: false
+
+                                    property var maxValue: 1500
+                                    property var minValue: 200
+
+                                    Behavior on maxValue{
+                                        PropertyAnimation{
+                                            properties: "maxValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+                                    Behavior on minValue{
+                                        PropertyAnimation{
+                                            properties: "minValue"
+                                            duration: 300
+                                            easing.type: Easing.OutQuint
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.top: pressureChartView.top
+                                        anchors.topMargin: 15
+                                        upEnable: pressureChartView.maxValue<3000
+                                        downEnable: pressureChartView.minValue<pressureChartView.maxValue
+                                        onAboutToDown: {
+                                            pressureChartView.maxValue -=50;
+                                        }
+                                        onAboutToUp: {
+                                            pressureChartView.maxValue += 50;
+                                        }
+                                    }
+
+                                    UpDownBox{
+                                        anchors.bottom: pressureChartView.bottom
+                                        anchors.bottomMargin: 15
+                                        upEnable: pressureChartView.minValue<pressureChartView.maxValue
+                                        downEnable: pressureChartView.minValue>0
+                                        onAboutToDown: {
+                                            pressureChartView.minValue -=50;
+                                        }
+                                        onAboutToUp: {
+                                            pressureChartView.minValue += 50;
+                                        }
+                                    }
+
+
+                                    ValueAxis{
+                                        id:yAxis2
+                                        min: pressureChartView.minValue
+                                        max: pressureChartView.maxValue
+                                        tickCount: 10
+                                        labelFormat: "%.0f"
+                                    }
+                                    DateTimeAxis{
+                                        id:xAxis2
+                                        min:fromDate
+                                        max: toDate
+                                        format: "yy/MM/dd"
+                                    }
+                                    LineSeries{
+                                        id:lineSeries2
+                                        axisX: xAxis2
+                                        axisY: yAxis2
+                                    }
                                 }
                             }
                         }
@@ -528,14 +794,4 @@ Item {
             tubeListModel.setProperty(root.currentEdittingTube,"displayColor",color.toString());
         }
     }
-
-    FileDialog{
-        id:saveImageDialog
-        onAccepted: {
-            chartView.grabToImage(function(result){
-                result.saveToFile(fileUrl);
-            });
-        }
-    }
-
 }

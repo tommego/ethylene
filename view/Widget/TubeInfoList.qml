@@ -53,30 +53,60 @@ Item {
                             width: parent.width/3-1
                             height: parent.height
                             Text{
-                                text: "       入管时间                         入管温度  "
-                                anchors.verticalCenter: parent.verticalCenter
+                                text: "入管时间"
                                 font.pixelSize: 12
                                 color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                x:10
+                            }
+
+                            Text{
+                                text: "入管温度"
+                                font.pixelSize: 12
+                                color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
                             }
                         }
                         Rectangle{
                             width: parent.width/3-1
                             height: parent.height
                             Text{
-                                text: "      出管时间                         入管温度  "
-                                anchors.verticalCenter: parent.verticalCenter
+                                text: "出管时间"
                                 font.pixelSize: 12
                                 color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                x:10
+                            }
+
+                            Text{
+                                text: "出管温度"
+                                font.pixelSize: 12
+                                color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
                             }
                         }
                         Rectangle{
                             width: parent.width/3-1
                             height: parent.height
                             Text{
-                                text: "      COT管时间                         入管温度  "
-                                anchors.verticalCenter: parent.verticalCenter
+                                text: "COT管时间"
                                 font.pixelSize: 12
                                 color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                x:10
+                            }
+
+                            Text{
+                                text: "COT管温度"
+                                font.pixelSize: 12
+                                color: "#333333"
+                                anchors.verticalCenter:  parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
                             }
                         }
                     }
@@ -94,24 +124,46 @@ Item {
                                 width: parent.width/3-1
                                 height: parent.height
                                 Text{
-                                    anchors.centerIn: parent
-                                    text: modelData.tubeInTime  + "                 " + modelData.tubeInTemp
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x:10
+                                    text:modelData.tubeInTime
+                                }
+                                Text{
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    text:modelData.tubeInTemp
+                                }
+
+                            }
+                            Rectangle{
+                                width: parent.width/3-1
+                                height: parent.height
+                                Text{
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x:10
+                                    text:modelData.tubeOutTime
+                                }
+                                Text{
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    text:modelData.tubeOutTemp
                                 }
                             }
                             Rectangle{
                                 width: parent.width/3-1
                                 height: parent.height
                                 Text{
-                                    anchors.centerIn: parent
-                                    text: modelData.tubeOutTime  + "                  " + modelData.tubeOutTemp
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x:10
+                                    text:modelData.tubeCOTTime
                                 }
-                            }
-                            Rectangle{
-                                width: parent.width/3-1
-                                height: parent.height
                                 Text{
-                                    anchors.centerIn: parent
-                                    text: modelData.tubeCOTTime  + "                 " + modelData.tubeCOTTemp
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    text:modelData.tubeCOTTemp
                                 }
                             }
                         }

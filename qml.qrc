@@ -22,6 +22,9 @@
         <file>view/Widget/ForanceNumComboBox.qml</file>
         <file>view/Widget/CustomComboBox.qml</file>
         <file>view/Widget/ESlider.qml</file>
+        <file>login.qml</file>
+        <file>view/Widget/FormTextEdit.qml</file>
+        <file>view/Widget/CheckButton.qml</file>
     </qresource>
     <qresource prefix="/imgs">
         <file>icons/add.png</file>

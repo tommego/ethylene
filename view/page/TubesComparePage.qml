@@ -29,6 +29,7 @@ Item {
     property var tubeCOTResultLines: []
 
     property int currentEdittingTube:0
+    property int currentFuranceNum: 5
 
     property var colorSet:[
         "#FF0000","#FF1493","#104E8B","#080808","#00688B","#00CED1","#3A5FCD","#404040",
@@ -38,16 +39,27 @@ Item {
         "#636363","#548B54","#8B6508","#CD2990","#B9D3EE","#8B8378","#8B5A2B","#8470FF",
         "#32CD32","#27408B","#4B0082","#6B8E23","#8B0A50","#8968CD","#708090","#7A67EE",
     ]
-    Component.onCompleted: {
-        for(var a = 0; a<5; a++){
-            selectedTubeListModel.append({
-                       "tubeNum":Number(a+1),
-                       "selected":true,
-                       "displayColor":colorSet[a]
-                   });
-        }
+
+    function refresh(){
+        chartView.removeAllSeries();
 
         for(var a = 0; a<selectedTubeListModel.count; a++){
+
+            var fromDateStr = fromDatPicker.year + "-" +
+                    fromDatPicker.month + "-" +
+                    fromDatPicker.day + " 00:00:00";
+            var toDateStr = toDatPicker.year + "-" +
+                    toDatPicker.month + "-" +
+                    toDatPicker.day + " 23:59:59"
+
+            var fDate = new Date(fromDateStr);
+            var tDate = new Date(toDateStr);
+
+            console.log("date:",fDate,",",tDate);
+
+            var result = server.compare_datas(currentFuranceNum, selectedTubeListModel.get(a).tubeNum, fDate, tDate);
+
+            console.log("result:",result.length);
 
             var myAxisX = chartView.axisX(lineSeries);
             var myAxisY = chartView.axisY(lineSeries);
@@ -55,17 +67,21 @@ Item {
             var lineOut = chartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
             var lineCOT = chartView.createSeries(ChartView.SeriesTypeLine, "T"+selectedTubeListModel.get(a).tubeNum, myAxisX, myAxisY);
 
+
+            fromDate = new Date(result[0].time);
+            toDate = new Date(result[result.length-1].time);
+
             var mdatas = [];
-            for(var b = 0; b<20; b++){
+            for(var b = 0; b<result.length; b++){
+
                 var mdata = {};
-                mdata.tubeInTemp = 860 + Math.random()*20;
-                mdata.tubeOutTemp = 920 + Math.random()*20;
-                mdata.tubeCOTTemp = 820 + Math.random()*20;
-
-                var day = (b+1)>10? Number(b+1).toString():"0"+Number(b+1).toString();
-
-                mdata.time = new Date("2016-01-"+day+" 00:00:00");
+                mdata.tubeInTemp = result[b].temp_in;
+                mdata.tubeOutTemp = result[b].temp_out;
+                mdata.tubeCOTTemp = result[b].temp_cot;
+                mdata.time = new Date(result[b].time);
+                console.log(mdata.time,result[b].time);
                 mdata.lineColor = selectedTubeListModel.get(a).displayColor;
+
                 mdatas.push(mdata);
 
                 //add spot
@@ -87,10 +103,7 @@ Item {
             tubeInResultLines.push(lineIn);
             tubeOutResultLines.push(lineOut);
             tubeCOTResultLines.push(lineCOT);
-
         }
-        if(tubeInResultLines[0].count)
-            xAxis.tickCount = tubeInResultLines[0].count>15?15:tubeInResultLines[0].count
     }
 
     //selected tube list model
@@ -223,8 +236,8 @@ Item {
 
                                     if(showTubeCOTCompareLines)
                                         tubeCOTResultLines[index].visible = checked;
-//                                        tubeCOTResultLines[index].visible = checked;
 
+                                    selectedTubeListModel.setProperty(index,"selected",checked);
                                 }
 
                                 style:SwitchStyle{
@@ -306,6 +319,7 @@ Item {
                     width: parent.width
                     height: 50
                     id: rightTopBar
+                    clip: true
                     Rectangle{
                         width: parent.width-10
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -316,8 +330,23 @@ Item {
 
                     // select row
                     Row{
-                        anchors.centerIn: parent
-                        spacing: 30
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        spacing: 15
+
+                        Item{
+                            width: 20
+                            height: 20
+                            anchors.verticalCenter: compareBnt.verticalCenter
+                            Text{
+                                anchors.centerIn: parent
+                                text: "从"
+                                font.pixelSize: 18
+                                color: "#12eeaa"
+                            }
+                        }
+
                         //from date picker
                         DatePicker{
                             id:fromDatPicker
@@ -369,6 +398,10 @@ Item {
                             height: 35
                             imgSrc: "qrc:/imgs/icons/bnt_comparer.png"
                             bgColor: "#12ccef"
+
+                            onBngClicked: {
+                                refresh();
+                            }
                         }
 
                         RoundIconButton{
@@ -378,7 +411,10 @@ Item {
                             text: "导出图片"
                             bgColor: "#ff7700"
                             onBngClicked: {
-                                saveImageDialog.open();
+                                chartView.grabToImage(function(result){
+                                    var url = server.getSaveFilePath();
+                                    result.saveToFile(url);
+                                });
                             }
                         }
                     }
@@ -401,7 +437,6 @@ Item {
 
                         property int maxDisplayTemp: 1100
                         property int minDisplayTemp: 700
-<<<<<<< HEAD
                         Behavior on maxDisplayTemp{
                             PropertyAnimation{
                                 properties: "maxDisplayTemp"
@@ -416,8 +451,6 @@ Item {
                                 duration: 300
                             }
                         }
-=======
->>>>>>> 1f89b31770f3ce809a62d97eb589b6b86e98caf6
 
                         UpDownBox{
                             id:maxUpdownBox
@@ -500,7 +533,8 @@ Item {
                                     checked: true
                                     onCheckedChanged: {
                                         for(var a in tubeInResultLines)
-                                            tubeInResultLines[a].visible = checked;
+                                            if(selectedTubeListModel.get(a).selected)
+                                                tubeInResultLines[a].visible = checked;
                                     }
 
                                     style: SwitchStyle{
@@ -552,7 +586,8 @@ Item {
                                     checked: true
                                     onCheckedChanged: {
                                         for(var a in tubeOutResultLines)
-                                            tubeOutResultLines[a].visible = checked;
+                                            if(selectedTubeListModel.get(a).selected)
+                                                tubeOutResultLines[a].visible = checked;
                                     }
 
                                     style: SwitchStyle{
@@ -604,7 +639,8 @@ Item {
                                     checked: true
                                     onCheckedChanged: {
                                         for(var a in tubeCOTResultLines)
-                                            tubeCOTResultLines[a].visible = checked;
+                                            if(selectedTubeListModel.get(a).selected)
+                                                tubeCOTResultLines[a].visible = checked;
                                     }
 
                                     style: SwitchStyle{
@@ -760,14 +796,4 @@ Item {
             tubeListModel.setProperty(root.currentEdittingTube,"displayColor",color.toString());
         }
     }
-
-    FileDialog{
-        id:saveImageDialog
-        onAccepted: {
-            chartView.grabToImage(function(result){
-                result.saveToFile(fileUrl);
-            });
-        }
-    }
-
 }

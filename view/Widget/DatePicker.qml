@@ -4,15 +4,16 @@ Item {
     id:datepicker
     width: mainRow.width
     height: 20
-    property int year:yearPlainText.text
-    property int month:monthPlainText.text
-    property int day: dayPlainText.text
+    property var year:yearPlainText.text
+    property var month:monthPlainText.text
+    property var day: dayPlainText.text
     Row{
         id:mainRow
         spacing: 5
         PlainTextEdit{
             id: yearPlainText
             minNumber: 2000
+            onTextChanged: year = text;
         }
         Item{
             width: 20
@@ -29,6 +30,7 @@ Item {
             maxNumber: 12
             minNumber: 1
             id: monthPlainText
+            onTextChanged:  month = text;
         }
         Item{
             width: 20
@@ -45,6 +47,7 @@ Item {
             maxNumber: 31
             minNumber: 1
             id: dayPlainText
+            onTextChanged: day = text;
         }
         Item{
             width: 20

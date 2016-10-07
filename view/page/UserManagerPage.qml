@@ -7,17 +7,27 @@ Item {
     id:root
     anchors.fill: parent
 
+    function refreshData(){
+        userModel.clear();
+        var users = server.usersList();
+
+        for(var a = 0; users.length; a++){
+            console.log(users[a].userAccess);
+            userModel.append({
+                       "userName":users[a].userName,
+                       "userPwd":users[a].userPwd,
+                       "userAccess":users[a].userAccess,
+                       "userNameEditting":false,
+                       "userPwdEditting":false,
+                       "userId":users[a].userId
+                   });
+        }
+    }
+
     ListModel{
         id: userModel
         Component.onCompleted: {
-            for(var a = 0; a<20; a++)
-                append({
-                           "userName":"user"+Number(a).toString(),
-                           "userPwd":"asdfdf",
-                           "userAccess":0,
-                           "userNameEditting":false,
-                           "userPwdEditting":false
-                       });
+            refreshData();
         }
     }
 
@@ -57,6 +67,9 @@ Item {
                             anchors.fill: parent
                             id:bntUserAdd
                             hoverEnabled: true
+                            onClicked: {
+                                addUserDialog.open();
+                            }
                         }
                     }
 
@@ -222,6 +235,7 @@ Item {
                                                 height: 30
                                                 enabled: userPwdEditting
                                                 textColor:activeFocus?"#12aadf":"454545"
+                                                echoMode: TextInput.Password
 
                                                 style: TextFieldStyle{
                                                     background: Rectangle{
@@ -279,8 +293,11 @@ Item {
                                             anchors.centerIn: parent
                                             model: ["普通","管理员"]
                                             currentIndex: userAccess
-                                            onCurrentIndexChanged: {
-                                                userModel.setProperty(index,"userAccess",currentIndex);
+                                            onActivated: {
+                                                userModel.setProperty(index,"userAccess",index);
+
+                                                server.updateUser(userName,userPwd,Number(index).toString(),userId);
+                                                refreshData();
                                             }
 
                                         }
@@ -297,7 +314,10 @@ Item {
                                                 id:bntUserDelete
                                                 hoverEnabled: true
                                                 onClicked: {
-                                                    userModel.remove(index)
+//                                                    userModel.remove(index)
+                                                    var result = server.removeUser(userName);
+                                                    console.log("remove user:",result);
+                                                    refreshData();
                                                 }
                                             }
                                         }
@@ -329,6 +349,132 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    CustomDialog{
+        id:addUserDialog
+        title: "添加新用户"
+        content:Item{
+            width: 500
+            height: 300
+            id: dialogContent
+            property string userName;
+            property string userPwd;
+            property string userRPwd;
+            property string access:"0"
+
+            Column{
+                anchors.centerIn: parent
+                spacing: 25
+
+                TextField{
+
+                    font.pixelSize: 16
+                    width: 250
+                    height: 30
+                    textColor:activeFocus?"#12aadf":"454545"
+                    placeholderText: "输入用户名"
+                    horizontalAlignment: TextInput.AlignHCenter
+                    onTextChanged:{
+                        dialogContent.userName = text;
+                    }
+
+                    style: TextFieldStyle{
+                        background: Rectangle{
+                            width: control.width
+                            height: control.height
+                            color: "#00000000"
+                            Rectangle{
+                                width: parent.width
+                                height: 1
+                                anchors.bottom: parent.bottom
+                                color: control.activeFocus?"#12aaef":"#555555"
+//                                visible: control.activeFocus
+                            }
+                        }
+                    }
+                }
+
+                TextField{
+                    font.pixelSize: 16
+                    width: 250
+                    height: 30
+                    textColor:activeFocus?"#12aadf":"454545"
+                    placeholderText: "输入用密码"
+                    echoMode:  TextInput.Password
+                    horizontalAlignment: TextInput.AlignHCenter
+                    onTextChanged:{
+                        dialogContent.userPwd = text;
+                    }
+
+                    style: TextFieldStyle{
+                        background: Rectangle{
+                            width: control.width
+                            height: control.height
+                            color: "#00000000"
+                            Rectangle{
+                                width: parent.width
+                                height: 1
+                                anchors.bottom: parent.bottom
+                                color: control.activeFocus?"#12aaef":"#555555"
+//                                visible: control.activeFocus
+                            }
+                        }
+                    }
+                }
+
+                TextField{
+                    font.pixelSize: 16
+                    width: 250
+                    height: 30
+                    textColor:activeFocus?"#12aadf":"454545"
+                    placeholderText: "再输入用密码"
+                    echoMode:  TextInput.Password
+                    horizontalAlignment: TextInput.AlignHCenter
+                    onTextChanged:{
+                        dialogContent.userRPwd = text;
+                    }
+
+                    style: TextFieldStyle{
+                        background: Rectangle{
+                            width: control.width
+                            height: control.height
+                            color: "#00000000"
+                            Rectangle{
+                                width: parent.width
+                                height: 1
+                                anchors.bottom: parent.bottom
+                                color: control.activeFocus?"#12aaef":"#555555"
+//                                visible: control.activeFocus
+                            }
+                        }
+                    }
+                }
+
+                CustomComboBox{
+                    model: ["普通","管理员"]
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onActivated: {
+                        dialogContent.access = Number(index).toString();
+                    }
+                }
+
+            }
+
+        }
+        onAccepted: {
+            if(dialogContent.userName ===""||
+                    dialogContent.userPwd==="")
+                return;
+
+            if(dialogContent.userPwd === dialogContent.userRPwd){
+                server.addUser(dialogContent.userName,dialogContent.userPwd,dialogContent.access);
+                refreshData();
+            }
+        }
+        onRejected: {
+
         }
     }
 }

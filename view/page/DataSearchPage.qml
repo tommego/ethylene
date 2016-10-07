@@ -7,25 +7,26 @@ Item {
     id:root
     anchors.fill: parent
     property var searchDatas:[]
+    property var result;
     property int currentGroup: 0
+    property int currentFuranceNum: 5
 
-    //test
     Component.onCompleted: {
         for(var a=0;a<12;a++){
             var tubeNum = a+1;
             var searchData = {};
             var datasInfo = [];
 
-            for(var b=0;b<100;b++){
+            for(var b=0;b<1;b++){
                 var sdata = {};
-                sdata.tubeInTime = "16/09/01 22:22:22";
-                sdata.tubeInTemp = 888;
+                sdata.tubeInTime = "";
+                sdata.tubeInTemp = "";
 
-                sdata.tubeOutTime = "16/09/01 22:22:22";
-                sdata.tubeOutTemp = 888;
+                sdata.tubeOutTime = "";
+                sdata.tubeOutTemp = "";
 
-                sdata.tubeCOTTime = "16/09/01 22:22:22";
-                sdata.tubeCOTTemp = 888;
+                sdata.tubeCOTTime = "";
+                sdata.tubeCOTTemp = "";
 
                 datasInfo.push(sdata);
             }
@@ -38,8 +39,46 @@ Item {
         searchDatasRepeator.model = searchDatas;
 
         datalistcontent.height = (searchDatas[0].datasInfo.length+1)*20 + 25
-//        console.log(searchDatas[0].datasInfo.length);
+        searchDatas = [];
     }
+
+    onCurrentGroupChanged: {
+        refresh();
+    }
+
+    function refresh(){
+        searchDatas = [];
+
+        for(var a=0;a<12;a++){
+            var tubeNum = currentGroup*12 + a ;
+            var searchData = {};
+            var datasInfo = [];
+
+            for(var b=0;b<result.tubeInData[tubeNum].data.length;b++){
+                var sdata = {};
+                sdata.tubeInTime = result.tubeInData[tubeNum].data[b].time;
+                sdata.tubeInTemp = result.tubeInData[tubeNum].data[b].temp;
+
+                sdata.tubeOutTime = result.tubeOutData[tubeNum].data[b].time;
+                sdata.tubeOutTemp = result.tubeOutData[tubeNum].data[b].temp;
+
+                sdata.tubeCOTTime = result.tubeCotData[tubeNum].data[b].time;
+                sdata.tubeCOTTemp = result.tubeCotData[tubeNum].data[b].temp;
+
+                datasInfo.push(sdata);
+            }
+
+            searchData.datasInfo = datasInfo;
+            searchData.tubeNum = tubeNum+1;
+
+            searchDatas.push(searchData);
+        }
+        searchDatasRepeator.model = searchDatas;
+
+        datalistcontent.height = (searchDatas[0].datasInfo.length+1)*20 + 25
+
+    }
+
 
 
     Column{
@@ -66,6 +105,22 @@ Item {
                     bgColor: "#41ccdc"
                     width: 120
                     height: 35
+                    onBngClicked: {
+                        searchDatas = [];
+
+                        var fromDateStr = fromDatePicker.year + "-" +
+                                fromDatePicker.month + "-" +
+                                fromDatePicker.day + " 00:00:00";
+                        var toDateStr = toDatePicker.year + "-" +
+                                toDatePicker.month + "-" +
+                                toDatePicker.day + " 23:59:50";
+                        var fromDate = new Date(fromDateStr);
+                        var toDate = new Date(toDateStr);
+
+                        result = server.all_tube_show(currentFuranceNum, fromDate, toDate);
+
+                        refresh();
+                    }
                 }
                 RoundIconButton{
                     id:exportbnt

@@ -8,8 +8,8 @@ Item {
     property int fontSize: 14
     property int pwidth: 60
     property int pheight: 25
-    property int maxNumber:9999
-    property int minNumber: 0
+    property string holderText: ""
+    property var echoMode: TextInput.Normal
 
     signal finished();
 
@@ -23,17 +23,22 @@ Item {
         text: plainTextEdit.text
         verticalAlignment:TextInput.AlignBottom
         horizontalAlignment: TextInput.AlignHCenter
-        validator: IntValidator {bottom: minNumber; top: maxNumber;}
         onTextChanged: plainTextEdit.text = text;
         onFontChanged: plainTextEdit.text = text;
+        echoMode: plainTextEdit.echoMode
+
+        placeholderText : plainTextEdit.holderText
         style: TextFieldStyle{
-            textColor: "#333333"
+            textColor: "#aaaaaa"
+
+            placeholderTextColor: "#999999"
             background: Rectangle {
+                color: "#00000000"
                 implicitWidth: plainTextEdit.width
                 implicitHeight: plainTextEdit.height
-                border.color: control.activeFocus?"#4577ee":"#666666"
+                border.color: control.activeFocus?"#9912eeff":"#99ffffff"
                 border.width: 1
-                radius: 5
+                radius: 2
             }
         }
         onEditingFinished: {
