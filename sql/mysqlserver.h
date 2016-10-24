@@ -86,6 +86,10 @@ public:
     Q_INVOKABLE QJsonArray pressureData(int forunceNum,int tubeNum,QDateTime from_DateTime,QDateTime to_DateTime);
     //全管查询
     Q_INVOKABLE QJsonObject all_tube_show(int forunceNum,QDateTime from_DateTime, QDateTime to_DateTime);
+    Q_PROPERTY(QString currentUser READ currentUser NOTIFY currentUserChanged)
+    QString currentUser();
+    Q_PROPERTY(int currentUserAccess READ currentUserAccess NOTIFY currentUserAccessChanged)
+    int currentUserAccess();
     //获取最新的入管，出管，ＣＯＴ温度
     Q_INVOKABLE QJsonArray access_tube_in_temp();
     Q_INVOKABLE QJsonArray access_tube_out_temp();
@@ -100,6 +104,9 @@ public:
 
     //登陆
     Q_INVOKABLE bool login(QString userName, QString pwd, QString access);
+
+    //注销
+    Q_INVOKABLE void logOut();
 
     //用户列表
     Q_INVOKABLE QJsonArray usersList();
@@ -131,6 +138,8 @@ public:
     QAxObject *worksheets;
     QAxObject *worksheet;
 signals:
+    void currentUserAccessChanged();
+    void currentUserChanged();
 
 public slots:
     //导出EXCEl
@@ -152,5 +161,6 @@ private:
     QString mdumpPath;
     QSettings msettings;
     int m_access = 0;
+    QString m_currentUser;
 };
 #endif // MYSQLSERVER_H

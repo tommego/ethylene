@@ -6,51 +6,8 @@ Item {
     property string bgColor: "#344750"
     property int currentIndex: 0
     signal indexChanged(var index);
+    property var dataModel;
     onCurrentIndexChanged: indexChanged(currentIndex)
-
-    ListModel{
-        id:menuList
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/date-input.png"
-            selected : true
-            title : "数据导入"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/search.png"
-            selected : false
-            title : "数据查询"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/compare.png"
-            selected : false
-            title : "管管比较"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/diagnosis.png"
-            selected : false
-            title : "结焦诊断"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/presure.png"
-            selected : false
-            title : "压力数据导入"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/user.png"
-            selected : false
-            title : "用户管理"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/setting.png"
-            selected : false
-            title : "参数信息"
-        }
-        ListElement{
-            imgSrc : "qrc:/imgs/icons/message.png"
-            selected : false
-            title : "版本信息"
-        }
-    }
 
     //background
     Rectangle{
@@ -76,7 +33,7 @@ Item {
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
                 Repeater{
-                    model: menuList
+                    model: dataModel
                     delegate: ImageCheckBox{
                         width: parent.width
                         height: 80

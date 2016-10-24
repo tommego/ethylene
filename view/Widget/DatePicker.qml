@@ -7,6 +7,21 @@ Item {
     property var year:yearPlainText.text
     property var month:monthPlainText.text
     property var day: dayPlainText.text
+    onMonthChanged: {
+        if(month.length == 1){
+            if(month <10 ){
+                month = "0" + Number(month).toString();
+            }
+        }
+    }
+    onDayChanged: {
+        if(day.length == 1){
+            if(day <10 ){
+                day = "0" + Number(month).toString();
+            }
+        }
+    }
+
     Row{
         id:mainRow
         spacing: 5

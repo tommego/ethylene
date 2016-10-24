@@ -595,6 +595,16 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     db.close();
 }
 
+QString MysqlServer::currentUser()
+{
+    return m_currentUser;
+}
+
+int MysqlServer::currentUserAccess()
+{
+    return m_access;
+}
+
 
 //获取 入管,出管,ＣＯＴ 的最新温度
 QJsonArray MysqlServer::access_tube_in_temp(){
@@ -1194,7 +1204,9 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
     db.setPassword("13727151867");
 
     m_access = access.toInt();
-    qDebug()<<"<<<<<<<<<<<<<<<"<<m_access;
+    m_currentUser = userName;
+    currentUserAccessChanged();
+    currentUserChanged();
 
     //链接数据库
     if(db.open()){
@@ -1215,6 +1227,11 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
         return true;
     }
     return false;
+}
+
+void MysqlServer::logOut()
+{
+    openLoginWindow();
 }
 
 QJsonArray MysqlServer::usersList()

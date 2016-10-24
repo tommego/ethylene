@@ -128,6 +128,9 @@ Item {
                     text: "导出数据"
                     width: 120
                     height: 35
+                    onBngClicked: {
+                        server.exportExcel1();
+                    }
                 }
             }
 

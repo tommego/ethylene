@@ -1,7 +1,8 @@
 import QtQuick 2.4
-import QtQuick.Controls 1.3
+import QtQuick.Controls 1.4
 import "./view"
 import QtQuick.Window 2.0
+import QtQuick.Layouts 1.1
 
 ApplicationWindow {
     property int windowWidth: Screen.desktopAvailableWidth*0.8
@@ -17,5 +18,17 @@ ApplicationWindow {
     //Main Window
     MainWindow{
         anchors.fill: parent
+    }
+    menuBar: MenuBar {
+        Menu {
+            title: "用户"
+            MenuItem {
+                text: "注销登陆"
+                onTriggered: {
+                    server.logOut();
+                    close();
+                }
+            }
+        }
     }
 }

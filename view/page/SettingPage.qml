@@ -7,7 +7,7 @@ Rectangle {
 
     Rectangle{
         anchors.centerIn: parent
-        width: 500
+        width: 550
         height: 600
         border.width: 1
         border.color: "#cccccc"
@@ -36,13 +36,26 @@ Rectangle {
                         text: "入管警戒温度"
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
+                        onValueChanged: tubeInTempEdit.text = value
+                    }
+
+                    PlainTextEdit{
+                        id:tubeInTempEdit
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: tubeInSlider.value
+                        enabled: true
+                        maxNumber: 2000
+                        minNumber: 500
+                        onFinished: {
+                            tubeInSlider.value = text;
+                        }
                     }
 
                     Text{
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: tubeInSlider.value + "℃"
+                        text: "℃"
                         font.pixelSize: 16
                         color: "#454545"
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }
@@ -65,13 +78,26 @@ Rectangle {
                         text: "出管警戒温度"
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
+                        onValueChanged: tubeOutTempEdit.text = value;
+                    }
+
+                    PlainTextEdit{
+                        id:tubeOutTempEdit
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: tubeOutSlider.value
+                        enabled: true
+                        maxNumber: 2000
+                        minNumber: 500
+                        onFinished: {
+                            tubeOutSlider.value = text;
+                        }
                     }
 
                     Text{
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: tubeOutSlider.value + "℃"
+                        text: "℃"
                         font.pixelSize: 16
                         color: "#454545"
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }
@@ -94,13 +120,28 @@ Rectangle {
                         text: "COT警戒温度"
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
+                        onValueChanged: {
+                            tubeCOTTempEdit.text = value;
+                        }
+                    }
+
+                    PlainTextEdit{
+                        id:tubeCOTTempEdit
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: tubeCOTSlider.value
+                        enabled: true
+                        minNumber: 500
+                        maxNumber: 2000
+                        onFinished: {
+                            tubeCOTSlider.value = text;
+                        }
                     }
 
                     Text{
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: tubeCOTSlider.value + "℃"
+                        text: "℃"
                         font.pixelSize: 16
                         color: "#454545"
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }
@@ -125,13 +166,28 @@ Rectangle {
                         minValue: 1
                         maxValue: 12
                         anchors.verticalCenter: parent.verticalCenter
+                        onValueChanged: {
+                            cycleEdit.text = value;
+                        }
+                    }
+
+                    PlainTextEdit{
+                        id:cycleEdit
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: cycleSlider.value
+                        enabled: true
+                        minNumber: 1
+                        maxNumber: 12
+                        onFinished: {
+                            cycleSlider.value = text;
+                        }
                     }
 
                     Text{
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: cycleSlider.value + "个月"
+                        text: "个月"
                         font.pixelSize: 16
                         color: "#454545"
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }

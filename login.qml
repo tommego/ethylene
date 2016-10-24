@@ -18,10 +18,13 @@ ApplicationWindow {
     }
 
     function login(username,passwd,access){
-        if(server.login(username,passwd,access))
+        if(server.login(username,passwd,access)){
             mainWin.close();
+            return true;
+        }
         else{
             //todo
+            return false;
         }
     }
 
@@ -164,7 +167,9 @@ ApplicationWindow {
                                     access = Number(1).toString();
                                 else
                                     access = Number(0).toString();
-                                login(userNameTextEdit.text,userPwdTextEdit.text,access);
+                                var result = login(userNameTextEdit.text,userPwdTextEdit.text,access);
+                                if(!result)
+                                    messageDialog.open();
                             }
                         }
                     }
@@ -177,6 +182,25 @@ ApplicationWindow {
                 width: 800
                 height: sourceSize.height*width/sourceSize.width
             }
+        }
+    }
+
+    CustomDialog{
+        id:messageDialog
+        title: "登陆错误"
+        content: Item{
+            width: 500
+            height: 100
+            Text{
+                anchors.centerIn: parent
+                font.pixelSize: 20
+                text: "您的账号或密码输入有误，请重新输入"
+                color: "#444444"
+            }
+        }
+        onAccepted: {
+            userNameTextEdit.text = "";
+            userPwdTextEdit.text = "";
         }
     }
 }
