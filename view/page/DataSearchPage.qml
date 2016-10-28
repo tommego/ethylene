@@ -129,7 +129,9 @@ Item {
                     width: 120
                     height: 35
                     onBngClicked: {
-                        server.exportExcel1();
+                        if(server.exportExcel1()) {
+                            console.log("哇咔咔，到底是谁先呢？？");
+                        }
                     }
                 }
             }

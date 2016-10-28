@@ -219,6 +219,7 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
 MysqlServer::MysqlServer(QObject *parent) :
     QObject(parent)
 {
+    connect (this,&MysqlServer::dumpDataOver,this,&MysqlServer::onDumpDataOver);
     //用户数据保存目录
     QString userDataPath=QDir::homePath ()+"/ethylene";
     QDir dir(userDataPath);
@@ -843,7 +844,7 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     return pressureData;
 }
 
-void MysqlServer::exportExcel1()      //手动导出excel
+bool MysqlServer::exportExcel1()      //手动导出excel
 {
 
     QString fileName=QDateTime::currentDateTime ().toString ("yyyy-MM-dd hh_mm_ss");
@@ -1013,12 +1014,15 @@ void MysqlServer::exportExcel1()      //手动导出excel
             workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(creatPath));//保存至creatPath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
             workbook->dynamicCall("Close()");//关闭工作簿
         }
+
     });//end thread
+    return true;
 }
 
-void MysqlServer::exportExcel ( QString fileName){
-    QString creatPath=mdumpPath+"/"+fileName;
-    qDebug()<<creatPath;
+void MysqlServer::exportExcel ( QString creatPath){
+//    QString creatPath=mdumpPath+"/"+fileName;
+//    QString creatPath=fileName;
+    qDebug()<<"存储路径"<<creatPath;
     //调用高级线程 (其中使用了lambda表达式“[]{...}”作为匿名函数使用)
     QtConcurrent::run([this,creatPath]{
         if(!creatPath.isEmpty()){
@@ -1187,6 +1191,7 @@ void MysqlServer::exportExcel ( QString fileName){
             workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(creatPath));//保存至creatPath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
             workbook->dynamicCall("Close()");//关闭工作簿
         }
+        dumpDataOver ();
     });//end thread
 }
 void MysqlServer::setDumpPath (QString path){
@@ -1197,17 +1202,18 @@ void MysqlServer::setDumpPath (QString path){
 bool MysqlServer::login(QString userName, QString pwd, QString access)
 {
     //创建
+    qDebug()<<"kk1";
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("localhost");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
     db.setPassword("13727151867");
-
+qDebug()<<"kk2";
     m_access = access.toInt();
     m_currentUser = userName;
     currentUserAccessChanged();
     currentUserChanged();
-
+qDebug()<<"kk3";
     //链接数据库
     if(db.open()){
         qDebug()<<"database is established!";
@@ -1215,7 +1221,7 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
     else{
         qDebug()<<"faled to connect to database";
     }
-
+qDebug()<<"kk4";
     //获取数据
     QSqlQuery query;
     QString str = "SELECT * FROM scheme1.users where user_name='" + userName +
@@ -1400,4 +1406,10 @@ QString MysqlServer::getSaveFilePath()
     QString filePath = QDir::home().path();
     QString fileName = "保存图片.png";
     return QFileDialog::getSaveFileName(0,tr("导出图片"),filePath+"/"+fileName,tr("*.png"));
+}
+
+void MysqlServer::onDumpDataOver (){
+    qDebug()<<"启动天魔解体大法";
+    this->deleteLater();
+
 }

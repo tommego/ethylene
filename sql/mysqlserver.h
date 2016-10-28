@@ -131,6 +131,9 @@ public:
     //获取保存图片路径
     Q_INVOKABLE QString getSaveFilePath();
     void dumpDatas();
+
+    //自动导出数据
+    void dumpDatasLi();
     //导出excel
     QAxObject *excel;
     QAxObject *workbooks;
@@ -141,10 +144,13 @@ signals:
     void currentUserAccessChanged();
     void currentUserChanged();
 
+    void dumpDataOver();
 public slots:
     //导出EXCEl
-    void exportExcel1();      //手动导出excel
-    void exportExcel(QString fileName);
+    bool exportExcel1();      //手动导出excel
+    void exportExcel(QString creatPath);
+
+    void onDumpDataOver();
 private:
     //当前48根管最新的温度数据保存
     ethlene_databases my_ethlene_datas;

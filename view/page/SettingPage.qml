@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Dialogs 1.0
 import "../Widget"
 
 Rectangle {
@@ -36,7 +37,12 @@ Rectangle {
                         text: "入管警戒温度"
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
-                        onValueChanged: tubeInTempEdit.text = value
+                        onValueChanged: {
+                            tubeInTempEdit.text = value
+                            console.log("noshow");
+                            saveButton.noshow=false;
+                        }
+
                     }
 
                     PlainTextEdit{
@@ -78,7 +84,11 @@ Rectangle {
                         text: "出管警戒温度"
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
-                        onValueChanged: tubeOutTempEdit.text = value;
+                        onValueChanged: {
+                            saveButton.noshow=false;
+                            tubeOutTempEdit.text = value;
+                        }
+
                     }
 
                     PlainTextEdit{
@@ -121,6 +131,7 @@ Rectangle {
                         value: 840
                         anchors.verticalCenter: parent.verticalCenter
                         onValueChanged: {
+                            saveButton.noshow=false;
                             tubeCOTTempEdit.text = value;
                         }
                     }
@@ -167,6 +178,7 @@ Rectangle {
                         maxValue: 12
                         anchors.verticalCenter: parent.verticalCenter
                         onValueChanged: {
+                            saveButton.noshow=false;
                             cycleEdit.text = value;
                         }
                     }
@@ -191,33 +203,127 @@ Rectangle {
                     }
                 }
             }
-        }
 
-        Row{
-            id:dumpBntRow
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 50
-            x:50
-            spacing: 20
-            Text{
-                text: "数据备份目录"
-                font.pixelSize: 15
-                color: "#454545"
-                anchors.verticalCenter: parent.verticalCenter
-            }
+            Row{
+                id:dumpBntRow
+    //            anchors.top: cycleSettingItem.bottom
+    //            anchors.topMargin: 50
+                x:0
+                spacing: 20
+                Text{
+                    text: "数据备份目录"
+                    font.pixelSize: 15
+                    color: "#454545"
+                    anchors.verticalCenter: parent.verticalCenter
+                }
 
-            Image {
-                id: dumpPathButton
-                source: bumpPathMa.pressed?"qrc:/imgs/icons/save_press.png":
-                                             bumpPathMa.containsMouse?"qrc:/imgs/icons/save_hover.png":
-                                                                       "qrc:/imgs/icons/save_normal.png"
-                MouseArea{
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    id:bumpPathMa
+                Image {
+                    id: dumpPathButton
+                    source: bumpPathMa.pressed?"qrc:/imgs/icons/save_press.png":
+                                                 bumpPathMa.containsMouse?"qrc:/imgs/icons/save_hover.png":
+                                                                           "qrc:/imgs/icons/save_normal.png"
+                    MouseArea{
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        id:bumpPathMa
+                        onClicked:  {
+                            if(savePath.text!="") {
+                                fileDialog.folder=savePath.text;
+                            }
+
+                            fileDialog.open();
+                        }
+                    }
+                }
+
+                Text{
+                    id:savePath
+                    text: ""
+                    clip: true;
+                    wrapMode:Text.WrapAnywhere;
+                    width: cycleSettingRow.width-200
+                    font.pixelSize: 15
+                    color: "#454545"
+                    anchors.verticalCenter: parent.verticalCenter
                 }
             }
         }
+
+        Rectangle {
+            id:saveButton
+            width: parent.width/3;
+            height: parent.height/8;
+            clip: true;
+            color: "#50f744"
+            radius: width/8;
+            anchors.horizontalCenter: parent.horizontalCenter ;
+            anchors.bottom: parent.bottom ;
+            anchors.bottomMargin: height/2;
+            property alias  noshow: masking.visible ;
+            enabled: !noshow
+            Text {
+                text: qsTr("保存设置");
+                anchors.centerIn: parent ;
+                font.pixelSize: parent.height/3
+                color: "white"
+            }
+            Rectangle {
+                id:masking
+                visible: true;
+                anchors.fill: parent ;
+                radius: parent.radius ;
+                color: "#70454545"
+            }
+            MouseArea {
+                anchors.fill: parent ;
+                onClicked: {
+                    saveButton.noshow=true;
+                    console.log("/YJS/tubeIn",tubeInSlider.value);
+                    ESINI.setValue("/YJS/tubeIn",tubeInSlider.value);
+                    ESINI.setValue("/YJS/tubeOut",tubeOutSlider.value);
+                    ESINI.setValue("/YJS/tubeCot",tubeCOTSlider.value);
+                    ESINI.setValue("/YJS/cycle",cycleSlider.value);
+                    ESINI.setValue("/YJS/savrPath",savePath.text);
+                }
+            }
+
+        }
+
+
+
+        FileDialog {
+              id: fileDialog
+              title: "Please choose a file"
+              folder: shortcuts.home
+//              selectExisting:true;
+              selectFolder:true;
+
+              onAccepted: {
+                  saveButton.noshow=false;
+                  console.log("You chose: " + fileDialog.fileUrls)
+                  savePath.text=""+fileDialog.fileUrls;
+                  close()
+              }
+              onRejected: {
+                  console.log("Canceled")
+                  close();
+              }
+              Component.onCompleted: visible = false
+          }
+    }
+    Component.onCompleted: {
+        console.log("运行了");
+        saveButton.noshow=true;
+        tubeInTempEdit.text=ESINI.getValue("/YJS/tubeIn",1000);
+        tubeInSlider.value=tubeInTempEdit.text;
+        tubeOutTempEdit.text=ESINI.getValue("/YJS/tubeOut",1000);
+        tubeOutSlider.value=tubeOutTempEdit.text;
+        tubeCOTTempEdit.text=ESINI.getValue("/YJS/tubeCot",1000);
+        tubeCOTSlider.value=tubeCOTTempEdit.text;
+        cycleEdit.text=ESINI.getValue("/YJS/cycle",12);
+        cycleSlider.value=cycleEdit.text;
+        savePath.text=ESINI.getValue("/YJS/savrPath","");
+
     }
 
 }

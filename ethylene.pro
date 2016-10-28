@@ -7,7 +7,9 @@ CONFIG += c++11
 SOURCES += main.cpp \
     sql/mysqlserver.cpp \
     serial/serialportmanager.cpp \
-    global.cpp
+    global.cpp \
+    setting/ethylenesetting.cpp \
+    autosavedata.cpp
 
 RESOURCES += qml.qrc
 
@@ -20,4 +22,6 @@ include(deployment.pri)
 HEADERS += \
     sql/mysqlserver.h \
     serial/serialportmanager.h \
-    global.h
+    global.h \
+    setting/ethylenesetting.h \
+    autosavedata.h
