@@ -98,7 +98,11 @@ Item {
                 bgColor: "#12ccef"
                 onBngClicked: {
                     var data = [];
-                    for(var a in pressureDatModel){
+//                    var kk=0;
+                    var limit=pressureDatModel.count;
+                    console.log("size:",limit);
+                    for(var a=0;a<limit;a++){
+                        console.log("压力",a,"值:",pressureDatModel.get(a).value);
                         data.push(pressureDatModel.get(a).value);
                     }
                     server.pushPressureData(currentFornace,data,globalDate);

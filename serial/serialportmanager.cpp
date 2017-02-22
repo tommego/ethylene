@@ -11,7 +11,7 @@ SerialPortManager::SerialPortManager(QObject *parent) : QObject(parent)
     this->seriaPort.setPortName(this->cPortName);
     this->seriaPort.setBaudRate(115200);
 
-    this->sendTimer.setInterval(10);
+    this->sendTimer.setInterval(100);
 
     connect(&seriaPort,SIGNAL(readyRead()),this,SLOT(readDatas()));
     connect(&sendTimer,SIGNAL(timeout()),this,SLOT(sendDatas()));
@@ -49,6 +49,7 @@ void SerialPortManager::closeSerialPort(){
 }
 //写入数据
 void SerialPortManager::writeDates(QString datas){
+    qDebug()<<this->seriaPort.portName()<<"       "<<this->seriaPort.baudRate()<<endl;
     serialSender.setPortName(this->seriaPort.portName());
     serialSender.setBaudRate(this->seriaPort.baudRate());
     qDebug()<<serialSender.open(QIODevice::ReadWrite);
@@ -59,7 +60,8 @@ void SerialPortManager::sendDatas(){
     if(this->dataSendTimes>=20){
         this->sendTimer.stop();
         this->dataSendTimes=0;
-        this->serialSender.close();
+//        this->serialSender.close();
+        closeSerialPort();
         return;
     }
 
@@ -68,9 +70,12 @@ void SerialPortManager::sendDatas(){
 
 
     //发送数据
+
     QString datas="Data_Receive_Success!";
     QByteArray data=datas.toLocal8Bit();
-    this->serialSender.write(data);
+//    this->serialSender.write(data);
+    qDebug()<<"falele1"<<seriaPort.write(data)<<endl;
+    qDebug()<<"falele"<<this->serialSender.write(data)<<endl;
     this->serialSender.waitForBytesWritten(100);
 
 }

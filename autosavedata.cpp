@@ -15,6 +15,7 @@ AutoSaveData::AutoSaveData(QString df,QObject *parent) : QObject(parent),dateFor
     stoveNumber[9]="H119";
     stoveNumber[10]="H120";
     timer.setInterval (300000);
+//    timer.setInterval(5000);
     timer.setSingleShot (false);
     timer.setTimerType (Qt::VeryCoarseTimer);
     connect (&timer,&QTimer::timeout,this,&AutoSaveData::check);

@@ -180,10 +180,10 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -294,10 +294,10 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -417,10 +417,10 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -611,10 +611,10 @@ int MysqlServer::currentUserAccess()
 QJsonArray MysqlServer::access_tube_in_temp(){
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -657,10 +657,10 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 QJsonArray MysqlServer::access_tube_out_temp(){
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -795,10 +795,10 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -853,10 +853,20 @@ bool MysqlServer::exportExcel1()      //手动导出excel
     QString creatPath=QFileDialog::getSaveFileName(0,tr("Export Excel"),filePath+"/"+fileName+format,tr("Microsoft Office 2003 (*.xlsx)"));//获取保存路径
     //调用高级线程 (其中使用了lambda表达式“[]{...}”作为匿名函数使用)
     QtConcurrent::run([this,creatPath]{
+        HRESULT r = OleInitialize(0);
+        if (r != S_OK && r != S_FALSE)
+        {
+            qWarning("Qt:初始化Ole失败（error %x）",(unsigned int)r);
+        }
+        qDebug()<<"bool excell 1"<<endl;
         if(!creatPath.isEmpty()){
-            excel = new QAxObject(this);
+            qDebug()<<"bool excell 1.1"<<endl;
+            excel = new QAxObject();
+            qDebug()<<"bool excell 1.2"<<endl;
             excel->setControl("Excel.Application");
+            qDebug()<<"bool excell 1.3"<<endl;
             excel->dynamicCall("SetVisible (bool Visible)","false");//不显示窗体
+            qDebug()<<"bool excell 1.4"<<endl;
             excel->setProperty("DisplayAlerts", false);//不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
             workbooks = excel->querySubObject("WorkBooks");//获取工作簿集合
             workbooks->dynamicCall("Add");//新建一个工作簿
@@ -871,6 +881,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
             //写表头
             QAxObject *header;
             QString  headerStr;
+            qDebug()<<"bool excell 2"<<endl;
             for ( int j = 1 ; j < 49 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 1,5*j-4);//获取单元格
@@ -883,6 +894,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
             AtoZ<<""<<"A"<<"B"<<"C"<<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
             QStringList AAZZ;
             AAZZ<<""<<"A"<<"B"<<"C"<<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
+            qDebug()<<"bool excell 3"<<endl;
             for ( int i = 1 ; i < 27 ; i++)
             {
                 for(int j = 1 ; j <27 ;j++)
@@ -891,6 +903,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 }
             }
             //左右居中 合并单元格
+            qDebug()<<"bool excell 4"<<endl;
             for ( int j = 1 ; j < 241 ; j++)
             {
                 QString cell;
@@ -907,6 +920,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 j = j+4;
             }
             //表头
+            qDebug()<<"bool excell 5"<<endl;
             for ( int j = 1 ; j < 49 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 2,5*j-4);//获取单元格
@@ -952,6 +966,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 header->setProperty("Bold", true);//设置黑体
             }
             //左右居中
+            qDebug()<<"bool excell 6"<<endl;
             for ( int j = 1 ; j < 241 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 3,j);//获取单元格
@@ -961,7 +976,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
             //写数据
             QAxObject *datas;
             QString  datasStr;
-
+            qDebug()<<"bool excell 7"<<endl;
             for ( int i  = 1 ; i < 49 ; i++ )
             {
                 //入管时间和温度
@@ -983,6 +998,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 }
                 j=0;
                 //出管时间和温度
+                qDebug()<<"bool excell 8"<<endl;
                 for ( auto it: tube_out_full_search_datas[i-1])
                 {
                     datasStr = it.time.toString(Qt::ISODate);
@@ -999,6 +1015,7 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 }
                 j=0;
                 //COT温度
+                qDebug()<<"bool excell 9"<<endl;
                 for ( auto it:tube_in_full_search_datas[i-1])
                 {
     //                datasStr = QString::number(tube_cot_full_search_datas[i-1].at(j).temp);
@@ -1011,10 +1028,12 @@ bool MysqlServer::exportExcel1()      //手动导出excel
             }
 
             //保存并关闭
+            qDebug()<<"bool excell 10"<<endl;
             workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(creatPath));//保存至creatPath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
             workbook->dynamicCall("Close()");//关闭工作簿
         }
 
+        OleUninitialize();
     });//end thread
     return true;
 }
@@ -1025,7 +1044,13 @@ void MysqlServer::exportExcel ( QString creatPath){
     qDebug()<<"存储路径"<<creatPath;
     //调用高级线程 (其中使用了lambda表达式“[]{...}”作为匿名函数使用)
     QtConcurrent::run([this,creatPath]{
+        HRESULT r = OleInitialize(0);
+        if (r != S_OK && r != S_FALSE)
+        {
+            qWarning("Qt:初始化Ole失败（error %x）",(unsigned int)r);
+        }
         if(!creatPath.isEmpty()){
+            qDebug()<<"excll   1"<<endl ;
             excel = new QAxObject(this);
             excel->setControl("Excel.Application");
             excel->dynamicCall("SetVisible (bool Visible)","false");//不显示窗体
@@ -1048,6 +1073,7 @@ void MysqlServer::exportExcel ( QString creatPath){
             //写表头
             QAxObject *header;
             QString  headerStr;
+            qDebug()<<"excll   2"<<endl ;
             for ( int j = 1 ; j < 49 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 1,5*j-4);//获取单元格
@@ -1060,6 +1086,7 @@ void MysqlServer::exportExcel ( QString creatPath){
             AtoZ<<""<<"A"<<"B"<<"C"<<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
             QStringList AAZZ;
             AAZZ<<""<<"A"<<"B"<<"C"<<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
+            qDebug()<<"excll   3"<<endl ;
             for ( int i = 1 ; i < 27 ; i++)
             {
                 for(int j = 1 ; j <27 ;j++)
@@ -1068,6 +1095,7 @@ void MysqlServer::exportExcel ( QString creatPath){
                 }
             }
             //左右居中 合并单元格
+            qDebug()<<"excll   4"<<endl ;
             for ( int j = 1 ; j < 241 ; j++)
             {
                 QString cell;
@@ -1084,6 +1112,7 @@ void MysqlServer::exportExcel ( QString creatPath){
                 j = j+4;
             }
             //表头
+            qDebug()<<"excll   5"<<endl ;
             for ( int j = 1 ; j < 49 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 2,5*j-4);//获取单元格
@@ -1129,6 +1158,7 @@ void MysqlServer::exportExcel ( QString creatPath){
                 header->setProperty("Bold", true);//设置黑体
             }
             //左右居中
+            qDebug()<<"excll   6"<<endl ;
             for ( int j = 1 ; j < 241 ; j++)
             {
                 header = worksheet->querySubObject("Cells(int,int)", 3,j);//获取单元格
@@ -1138,7 +1168,7 @@ void MysqlServer::exportExcel ( QString creatPath){
             //写数据
             QAxObject *datas;
             QString  datasStr;
-
+            qDebug()<<"excll   7"<<endl ;
             for ( int i  = 1 ; i < 49 ; i++ )
             {
                 //入管时间和温度
@@ -1188,9 +1218,11 @@ void MysqlServer::exportExcel ( QString creatPath){
             }
 
             //保存并关闭
+            qDebug()<<"excll   8"<<endl ;
             workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(creatPath));//保存至creatPath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
             workbook->dynamicCall("Close()");//关闭工作簿
         }
+        OleUninitialize();
         dumpDataOver ();
     });//end thread
 }
@@ -1202,18 +1234,15 @@ void MysqlServer::setDumpPath (QString path){
 bool MysqlServer::login(QString userName, QString pwd, QString access)
 {
     //创建
-    qDebug()<<"kk1";
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
-qDebug()<<"kk2";
+    db.setPassword("Yang1997");
     m_access = access.toInt();
     m_currentUser = userName;
     currentUserAccessChanged();
     currentUserChanged();
-qDebug()<<"kk3";
     //链接数据库
     if(db.open()){
         qDebug()<<"database is established!";
@@ -1244,10 +1273,10 @@ QJsonArray MysqlServer::usersList()
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -1281,10 +1310,10 @@ bool MysqlServer::addUser(const QString &userName, const QString &pwd, const QSt
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -1313,10 +1342,10 @@ bool MysqlServer::removeUser(const QString &userName)
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -1341,10 +1370,10 @@ bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const 
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -1364,12 +1393,13 @@ bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const 
 
 bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const QDateTime &date)
 {
+    qDebug()<<"输入压力"<<fn<<"    "<<date.toString ("yyyy-MM-dd hh:mm:ss");
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
-    db.setPassword("13727151867");
+    db.setPassword("Yang1997");
 
     //链接数据库
     if(db.open()){
@@ -1409,7 +1439,6 @@ QString MysqlServer::getSaveFilePath()
 }
 
 void MysqlServer::onDumpDataOver (){
-    qDebug()<<"启动天魔解体大法";
     this->deleteLater();
 
 }

@@ -99,7 +99,6 @@ Item {
             tubeInLine.append((i+1),requestData.tubeInDatas[currentGroup*12 + i].temp);
             tubeOutLine.append((i+1),requestData.tubeOutDatas[currentGroup*12 + i].temp);
 //            tubeCOTLine.append((i+1),requestData.tubeCOTDatas[currentGroup*12 + i].temp);
-
 //            tubeOutLine.replace()
             tubeInBarValues.push(requestData.tubeInDatas[currentGroup*12 + i].temp);
             tubeOutBarValues.push(requestData.tubeOutDatas[currentGroup*12 + i].temp);
