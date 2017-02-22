@@ -234,14 +234,12 @@ MysqlServer::MysqlServer(QObject *parent) :
     //初始化各个管的温度
     for(int a=0;a<48;a++){
         my_ethlene_datas.tube_in_temps[a]=0;
+        my_ethlene_datas.tube_out_temps[a] = 0;
+        my_ethlene_datas.cot_temp[a] = 0;
+        my_ethlene_datas.time[a] = QDateTime();
+        my_ethlene_datas.time1[a] = QDateTime();
+        my_ethlene_datas.time2[a] = QDateTime();
     }
-    for(int a=0;a<48;a++){
-        my_ethlene_datas.tube_out_temps[a]=0;
-    }
-    for(int a=0;a<48;a++){
-        my_ethlene_datas.cot_temp[a]=0;
-    }
-
 //    QAxObject *excel;
 //    QAxObject *workbooks;
 //    QAxObject *workbook;
@@ -440,10 +438,19 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
             " and Time<='"+to_DateTime.date ().toString ("yyyy-MM-dd")+"'";
     query.exec (sqlstr1);
     while(query.next ()){
+        const int& tn = query.value("TN").toInt();
+        const int& temp = query.value("Temp").toInt();
+        const QDateTime& dt = query.value("Time").toDateTime();
+
+        if(tn < 1 || tn > 48)
+            continue;
+        if(temp < 0)
+            continue;
+
         datas_time data;
-        data.time=query.value ("Time").toDateTime ();
-        data.temp=query.value ("Temp").toInt ();
-        tube_in_full_search_datas[query.value ("TN").toInt ()-1].append (data);
+        data.time = dt;
+        data.temp = temp;
+        tube_in_full_search_datas[tn - 1].append (data);
     }
 
     query.clear ();
@@ -453,11 +460,20 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
 
     query.exec (sqlstr1);
     while (query.next ()) {
+        const int& tn = query.value("TN").toInt();
+        const int& temp = query.value("Temp").toInt();
+        const QDateTime& dt = query.value("Time").toDateTime();
+
+        if(tn < 1 || tn > 48)
+            continue;
+        if(temp < 0)
+            continue;
+
         datas_time data;
-        data.time=query.value ("Time").toDateTime ();
-        data.temp=query.value ("Temp").toInt ();
-        tube_out_full_search_datas[query.value ("TN").toInt ()-1].append (data);
-        get_outTime_forCot[query.value ("TN").toInt ()-1].append(data.time);
+        data.time = dt;
+        data.temp = temp;
+        tube_out_full_search_datas[tn - 1].append (data);
+        get_outTime_forCot[tn - 1].append(data.time);
     }
 
     //sort data
@@ -517,7 +533,6 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     db=QSqlDatabase::addDatabase("QODBC");
 
     //连接石油厂数据库
-    //
     db.setHostName("10.112.200.22");
     db.setDatabaseName("History");
     db.setPort(10014);
@@ -531,8 +546,6 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
         qDebug()<<"faled to connect to remote database";
         return root;
     }
-
-
 
 
     //通过链接石油厂数据库加载COT温度数据
@@ -610,19 +623,17 @@ int MysqlServer::currentUserAccess()
 //获取 入管,出管,ＣＯＴ 的最新温度
 QJsonArray MysqlServer::access_tube_in_temp(){
     //创建
-    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");
     db.setPassword("Yang1997");
 
     //链接数据库
-    if(db.open()){
+    if(db.open())
         qDebug()<<"database is established!";
-    }
-    else{
+    else
         qDebug()<<"faled to connect to database";
-    }
 
     //获取数据
     QSqlQuery query;
@@ -634,16 +645,26 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 
     //数据获取
     while(query.next()){
-        //判断初始值是否为空
-        if(my_ethlene_datas.time[query.value(2).toInt()-1].toString()==""||
-                my_ethlene_datas.time[query.value(2).toInt()-1]<=((query.value(4).toDateTime()))){
+        //判断初始值是否为空d
+        const int tn = query.value("TN").toInt();
+        const QDateTime dt = query.value("Time").toDateTime();
+        const int temp = query.value("Temp").toInt();
+
+        if(tn < 1 || tn > 48)
+            continue;
+
+        if(temp < 0)
+            continue;
+
+        if(my_ethlene_datas.time[tn-1].toString()==""||
+                my_ethlene_datas.time[tn-1] <= dt){
 
             //保存最新温度数据，方便后面作时间比较
-            my_ethlene_datas.tube_in_temps[query.value(2).toInt()-1]=query.value(3).toInt();
-            my_ethlene_datas.time[query.value(2).toInt()-1]=query.value(4).toDateTime();
+            my_ethlene_datas.tube_in_temps[tn-1] = temp;
+            my_ethlene_datas.time[tn-1] = dt;
         }
     }
-    for(int i = 0; i<48; i++){
+    for(int i = 0; i < 48; i++){
         QJsonObject jsobj;
         jsobj.insert ("temp",my_ethlene_datas.tube_in_temps[i]);
         jsobj.insert ("time",my_ethlene_datas.time[i].toString("yyyy-MM-dd hh:mm:ss"));
@@ -663,35 +684,40 @@ QJsonArray MysqlServer::access_tube_out_temp(){
     db.setPassword("Yang1997");
 
     //链接数据库
-    if(db.open()){
-
+    if(db.open())
         qDebug()<<"database is established!";
-    }
-    else{
+    else
         qDebug()<<"faled to connect to database";
-    }
 
     //json 数据
     QJsonArray jsarr;
 
     //获取数据
     QSqlQuery query;
-    /*qDebug()<<"查询检测"<<*/query.exec("select * from table_out ");
-//   /* qDebug()<<"查询检测000"<<*/query.exec("SELECT * FROM scheme1.table_out WHERE Time>='"+importDate+" 00:00:00' and Time<='"+importDate+" 59:59:59'");
-    qDebug()<<"查询检测AAA"<<query.exec("SELECT * FROM scheme1.table_out ORDER BY Time DESC");
+    query.exec("select * from table_out ");
+    query.exec("SELECT * FROM scheme1.table_out ORDER BY Time DESC");
 
     //数据获取
     while(query.next()){
         //判断初始值是否为空
-        if(my_ethlene_datas.time1[query.value(2).toInt()-1].toString()==""||
-                my_ethlene_datas.time1[query.value(2).toInt()-1]<=(query.value(4).toDateTime())){
+        const int tn = query.value("TN").toInt();
+        const QDateTime dt = query.value("Time").toDateTime();
+        const int temp = query.value("Temp").toInt();
+
+        if(tn < 1 || tn > 48)
+            continue;
+        if(temp < 0)
+            continue;
+
+        if(my_ethlene_datas.time1[tn-1].toString() == ""||
+                my_ethlene_datas.time1[tn-1] <= dt){
             //保存最新温度数据，方便后面作时间比较
-            my_ethlene_datas.tube_out_temps[query.value(2).toInt()-1]=query.value(3).toInt();
-            my_ethlene_datas.time1[query.value(2).toInt()-1]=query.value(4).toDateTime();
+            my_ethlene_datas.tube_out_temps[tn-1] = temp;
+            my_ethlene_datas.time1[tn-1] = dt;
         }
     }
 
-    for(int i = 0; i<48; i++){
+    for(int i = 0; i < 48; i++){
         QJsonObject jsobj;
         jsobj.insert ("temp",my_ethlene_datas.tube_out_temps[i]);
         jsobj.insert ("time",my_ethlene_datas.time1[i].toString("yyyy-MM-dd hh:mm:ss"));
@@ -1393,9 +1419,8 @@ bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const 
 
 bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const QDateTime &date)
 {
-    qDebug()<<"输入压力"<<fn<<"    "<<date.toString ("yyyy-MM-dd hh:mm:ss");
     //创建
-    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("112.74.35.29");
     db.setDatabaseName("scheme1");
     db.setUserName("root");

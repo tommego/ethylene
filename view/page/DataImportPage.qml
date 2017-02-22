@@ -23,7 +23,7 @@ Item {
         requestData = {};
         requestData.tubeInDatas = server.access_tube_in_temp();
         requestData.tubeOutDatas = server.access_tube_out_temp();
-        requestData.tubeCOTDatas = server.access_tube_cot_temp();
+        requestData.tubeCOTDatas = server.access_tube_out_temp();
     }
 
     //串口数据导入排错检测
@@ -72,18 +72,23 @@ Item {
         var tubeCOTBarValues = [];
 
         for(var i = 0; i< 12; i++){
-            tubeInLine.append((i+1),requestData.tubeInDatas[currentGroup*12 + i].temp);
-            tubeOutLine.append((i+1),requestData.tubeOutDatas[currentGroup*12 + i].temp);
-//            tubeCOTLine.append((i+1),requestData.tubeCOTDatas[currentGroup*12 + i].temp);
+            var tempIn = requestData.tubeInDatas[currentGroup*12 + i].temp;
+            var tempOut = requestData.tubeOutDatas[currentGroup*12 + i].temp;
+            var tempCot = tempOut - 120;
+            tubeInLine.append((i+1), tempIn);
+            tubeOutLine.append((i+1), tempOut);
+            tubeCOTLine.append((i+1), tempCot);
 
-            tubeInBarValues.push(requestData.tubeInDatas[currentGroup*12 + i].temp);
-            tubeOutBarValues.push(requestData.tubeOutDatas[currentGroup*12 + i].temp);
-//            tubeCOTBarValues.push(requestData.tubeCOTDatas[currentGroup*12 + i].temp);
+            tubeInBarValues.push(tempIn);
+            tubeOutBarValues.push(tempOut);
+            tubeCOTBarValues.push(tempCot);
         }
 
         tubeInBarSet.values = tubeInBarValues;
         tubeOutBarSet.values = tubeOutBarValues;
         tubeCOTBarSet.values = tubeCOTBarValues;
+        console.log("********************", tubeCOTBarValues);
+//        tubeCOTBarSet.values = [855,855,855,855,855,855,855,855,855,855,855,855];
     }
 
     onCurrentGroupChanged: {
@@ -96,13 +101,20 @@ Item {
         var tubeCOTBarValues = [];
 
         for(var i = 0; i< 12; i++){
-            tubeInLine.append((i+1),requestData.tubeInDatas[currentGroup*12 + i].temp);
-            tubeOutLine.append((i+1),requestData.tubeOutDatas[currentGroup*12 + i].temp);
-//            tubeCOTLine.append((i+1),requestData.tubeCOTDatas[currentGroup*12 + i].temp);
-//            tubeOutLine.replace()
-            tubeInBarValues.push(requestData.tubeInDatas[currentGroup*12 + i].temp);
-            tubeOutBarValues.push(requestData.tubeOutDatas[currentGroup*12 + i].temp);
-//            tubeCOTBarValues.push(requestData.tubeCOTDatas[currentGroup*12 + i].temp);
+            var tempIn = requestData.tubeInDatas[currentGroup*12 + i].temp;
+            var tempOut = requestData.tubeOutDatas[currentGroup*12 + i].temp;
+            var tempCot = tempOut - 120;
+            tubeInLine.append((i+1), tempIn);
+            tubeOutLine.append((i+1), tempOut);
+
+            //test for cot using tube_out datas
+            tubeCOTLine.append((i+1),tempCot);
+
+            tubeInBarValues.push(tempIn);
+            tubeOutBarValues.push(tempOut);
+
+            //test for cot using tube_out datas
+            tubeCOTBarValues.push(tempCot);
         }
 
         tubeInBarSet.values = tubeInBarValues;
@@ -291,6 +303,7 @@ Item {
                                     categories: ["1", "2", "3", "4", "5", "6","7","8","9","10","11","12" ]
                                 }
                                 axisY: barAxisY
+
                                 BarSet {
                                     id:tubeOutBarSet
                                     label: "出管温度";
@@ -306,6 +319,14 @@ Item {
                                     label: "COT温度";
 //                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
                                 }
+//                                BarSet {
+//                                    label: "COT温度";
+//                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
+//                                }
+//                                BarSet {
+//                                    label: "COT温度";
+//                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
+//                                }
                             }
                         }
                     }
@@ -519,7 +540,7 @@ Item {
                     for(var a=1;a<temp18s.length-1;a++){
                         //半段是否采用从右到左的数据插入方法
                         if(rule===1)
-                            var tubenum=a+(12-(g-1)*12);
+                            var tubenum=13-a+(g-1)*12;
                         else
                             var tubenum=a+(g-1)*12;
 
