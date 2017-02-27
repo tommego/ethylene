@@ -87,8 +87,6 @@ Item {
         tubeInBarSet.values = tubeInBarValues;
         tubeOutBarSet.values = tubeOutBarValues;
         tubeCOTBarSet.values = tubeCOTBarValues;
-        console.log("********************", tubeCOTBarValues);
-//        tubeCOTBarSet.values = [855,855,855,855,855,855,855,855,855,855,855,855];
     }
 
     onCurrentGroupChanged: {
@@ -319,14 +317,6 @@ Item {
                                     label: "COT温度";
 //                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
                                 }
-//                                BarSet {
-//                                    label: "COT温度";
-//                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
-//                                }
-//                                BarSet {
-//                                    label: "COT温度";
-//                                    values: [855,855,855,855,855,855,855,855,855,855,855,855]
-//                                }
                             }
                         }
                     }

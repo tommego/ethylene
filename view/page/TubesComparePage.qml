@@ -42,6 +42,9 @@ Item {
 
     function refresh(){
         chartView.removeAllSeries();
+        tubeInResultLines = [];
+        tubeOutResultLines = [];
+        tubeCOTResultLines = [];
 
         for(var a = 0; a<selectedTubeListModel.count; a++){
 
@@ -55,11 +58,8 @@ Item {
             var fDate = new Date(fromDateStr);
             var tDate = new Date(toDateStr);
 
-            console.log("date:",fDate,",",tDate);
 
             var result = server.compare_datas(currentFuranceNum, selectedTubeListModel.get(a).tubeNum, fDate, tDate);
-
-            console.log("result:",result.length);
 
             var myAxisX = chartView.axisX(lineSeries);
             var myAxisY = chartView.axisY(lineSeries);
@@ -71,13 +71,14 @@ Item {
             fromDate = new Date(result[0].time);
             toDate = new Date(result[result.length-1].time);
 
+            //append spot
             var mdatas = [];
             for(var b = 0; b<result.length; b++){
 
                 var mdata = {};
                 mdata.tubeInTemp = result[b].temp_in;
                 mdata.tubeOutTemp = result[b].temp_out;
-                mdata.tubeCOTTemp = result[b].temp_cot;
+                mdata.tubeCOTTemp = (result[b].temp_out - 200);
                 mdata.time = new Date(result[b].time);
                 console.log(mdata.time,result[b].time);
                 mdata.lineColor = selectedTubeListModel.get(a).displayColor;
@@ -99,6 +100,10 @@ Item {
                 lineCOT.style = tubeOutLIneStyle;
                 lineIn.style = tubeCOTLineStyle;
             }
+
+            lineIn.visible = selectedTubeListModel.get(a).selected;
+            lineOut.visible = selectedTubeListModel.get(a).selected;
+            lineCOT.visible = selectedTubeListModel.get(a).selected;
             //restore lines to further control
             tubeInResultLines.push(lineIn);
             tubeOutResultLines.push(lineOut);

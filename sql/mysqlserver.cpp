@@ -637,7 +637,7 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("SELECT * FROM scheme1.table_in ORDER BY Time DESC");
+    query.exec("SELECT * FROM scheme1.table_in where Time in(select max(Time) from scheme1.table_in group by TN)");
 
     //json 数据
     QJsonArray jsarr;
@@ -656,13 +656,9 @@ QJsonArray MysqlServer::access_tube_in_temp(){
         if(temp < 0)
             continue;
 
-        if(my_ethlene_datas.time[tn-1].toString()==""||
-                my_ethlene_datas.time[tn-1] <= dt){
-
-            //保存最新温度数据，方便后面作时间比较
-            my_ethlene_datas.tube_in_temps[tn-1] = temp;
-            my_ethlene_datas.time[tn-1] = dt;
-        }
+        //保存最新温度数据，方便后面作时间比较
+        my_ethlene_datas.tube_in_temps[tn-1] = temp;
+        my_ethlene_datas.time[tn-1] = dt;
     }
     for(int i = 0; i < 48; i++){
         QJsonObject jsobj;
@@ -694,8 +690,7 @@ QJsonArray MysqlServer::access_tube_out_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("select * from table_out ");
-    query.exec("SELECT * FROM scheme1.table_out ORDER BY Time DESC");
+    query.exec("SELECT * FROM scheme1.table_out where Time in(select max(Time) from scheme1.table_out group by TN)");
 
     //数据获取
     while(query.next()){
@@ -709,12 +704,9 @@ QJsonArray MysqlServer::access_tube_out_temp(){
         if(temp < 0)
             continue;
 
-        if(my_ethlene_datas.time1[tn-1].toString() == ""||
-                my_ethlene_datas.time1[tn-1] <= dt){
-            //保存最新温度数据，方便后面作时间比较
-            my_ethlene_datas.tube_out_temps[tn-1] = temp;
-            my_ethlene_datas.time1[tn-1] = dt;
-        }
+        //保存最新温度数据，方便后面作时间比较
+        my_ethlene_datas.tube_out_temps[tn-1] = temp;
+        my_ethlene_datas.time1[tn-1] = dt;
     }
 
     for(int i = 0; i < 48; i++){
