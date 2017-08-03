@@ -180,10 +180,10 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -199,7 +199,7 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
         table="table_out";
 
     //获取数据,同时检查是否有重复数据，如果有就跳出函数
-    QString querystr="SELECT Time from scheme1."+table+" where Time="+"'"+dataTime+"' AND TN='"+tubeNum+"' AND FN='"+forunNum+"'";
+    QString querystr="SELECT Time from schema1."+table+" where Time="+"'"+dataTime+"' AND TN='"+tubeNum+"' AND FN='"+forunNum+"'";
     QSqlQuery query;
     query.exec(querystr);
 
@@ -208,9 +208,9 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
         return;
     }
 
-//    INSERT INTO `scheme1`.`table_out` (`idtable_out`, `FN`, `TN`, `Temp`, `Time`) VALUES ('1001', '5', '12', '970', '2015-02-19 09:20:23');
+//    INSERT INTO `schema1`.`table_out` (`idtable_out`, `FN`, `TN`, `Temp`, `Time`) VALUES ('1001', '5', '12', '970', '2015-02-19 09:20:23');
     //检查已经没有重复数据后把数据插入表中
-    querystr="INSERT INTO `scheme1`.`"+table+"` (`FN`,`TN`,`Temp`,`Time`) VALUES ('"+forunNum+"','"+tubeNum+"','"+temp+"','"+dataTime+"')";
+    querystr="INSERT INTO `schema1`.`"+table+"` (`FN`,`TN`,`Temp`,`Time`) VALUES ('"+forunNum+"','"+tubeNum+"','"+temp+"','"+dataTime+"')";
     query.clear();
     query.exec(querystr);
     db.close();
@@ -292,10 +292,10 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -415,10 +415,10 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -624,10 +624,10 @@ int MysqlServer::currentUserAccess()
 QJsonArray MysqlServer::access_tube_in_temp(){
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open())
@@ -637,7 +637,7 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("SELECT * FROM scheme1.table_in where Time in(select max(Time) from scheme1.table_in group by TN)");
+    query.exec("SELECT * FROM schema1.table_in where Time in(select max(Time) from schema1.table_in group by TN)");
 
     //json 数据
     QJsonArray jsarr;
@@ -674,10 +674,10 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 QJsonArray MysqlServer::access_tube_out_temp(){
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open())
@@ -690,7 +690,7 @@ QJsonArray MysqlServer::access_tube_out_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("SELECT * FROM scheme1.table_out where Time in(select max(Time) from scheme1.table_out group by TN)");
+    query.exec("SELECT * FROM schema1.table_out where Time in(select max(Time) from schema1.table_out group by TN)");
 
     //数据获取
     while(query.next()){
@@ -813,10 +813,10 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1253,10 +1253,10 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
     m_access = access.toInt();
     m_currentUser = userName;
     currentUserAccessChanged();
@@ -1267,11 +1267,12 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
     }
     else{
         qDebug()<<"faled to connect to database";
+        return false;
     }
 qDebug()<<"kk4";
     //获取数据
     QSqlQuery query;
-    QString str = "SELECT * FROM scheme1.users where user_name='" + userName +
+    QString str = "SELECT * FROM schema1.users where user_name='" + userName +
             "' and user_pwd='" + pwd +
             "' and user_access='" + access + "'";
     query.exec(str);
@@ -1291,10 +1292,10 @@ QJsonArray MysqlServer::usersList()
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1306,7 +1307,7 @@ QJsonArray MysqlServer::usersList()
 
     //获取数据
     QSqlQuery query;
-    QString str = "SELECT user_name,user_pwd,user_access,id FROM scheme1.users";
+    QString str = "SELECT user_name,user_pwd,user_access,id FROM schema1.users";
     QJsonArray users;
     query.exec(str);
     while(query.next()){
@@ -1328,10 +1329,10 @@ bool MysqlServer::addUser(const QString &userName, const QString &pwd, const QSt
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1341,12 +1342,12 @@ bool MysqlServer::addUser(const QString &userName, const QString &pwd, const QSt
         qDebug()<<"faled to connect to database";
     }
     QSqlQuery query;
-    QString checkStr = "SELECT * from `scheme1`.`users` where user_name='"+userName+"'";
+    QString checkStr = "SELECT * from `schema1`.`users` where user_name='"+userName+"'";
     query.exec(checkStr);
     if(query.next())
         return false;
     query.clear();
-    QString str = "INSERT INTO `scheme1`.`users` (`user_name`,`user_pwd`,`user_access`) VALUES ('"+userName+"','"+pwd+"','"+access+"')";
+    QString str = "INSERT INTO `schema1`.`users` (`user_name`,`user_pwd`,`user_access`) VALUES ('"+userName+"','"+pwd+"','"+access+"')";
     qDebug()<<"insert user"<<query.exec(str);
 
     db.close();
@@ -1360,10 +1361,10 @@ bool MysqlServer::removeUser(const QString &userName)
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1374,24 +1375,24 @@ bool MysqlServer::removeUser(const QString &userName)
     }
     QSqlQuery query;
 
-    QString str = "DELETE FROM `scheme1`.`users` WHERE `user_name`='"+userName+"'";
+    QString str = "DELETE FROM `schema1`.`users` WHERE `user_name`='"+userName+"'";
     qDebug()<<"delete user:"<<query.exec(str);
     return true;
 }
 
 bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const QString &access, const QString& userId)
 {
-//    UPDATE `scheme1`.`users` SET `user_access`='1' WHERE `id`='2';
+//    UPDATE `schema1`.`users` SET `user_access`='1' WHERE `id`='2';
 
     if(m_access == 0)
         return false;
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1401,7 +1402,7 @@ bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const 
         qDebug()<<"faled to connect to database";
     }
     QSqlQuery query;
-    QString str = "UPDATE `scheme1`.`users` SET `user_name`='"+userName+
+    QString str = "UPDATE `schema1`.`users` SET `user_name`='"+userName+
             "',`user_pwd`='"+pwd+
             "',`user_access`='"+access+"' WHERE `id`='"+userId+"'";
     qDebug()<<query.exec(str);
@@ -1413,10 +1414,10 @@ bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const 
 {
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("112.74.35.29");
-    db.setDatabaseName("scheme1");
+    db.setHostName("139.199.211.202");
+    db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("Yang1997");
+    db.setPassword("meng");
 
     //链接数据库
     if(db.open()){
@@ -1436,7 +1437,7 @@ bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const 
     for(auto it: data){
         QString value = it.toString();
         QString dateStr = date.toString("yyyy-MM-dd hh:mm:ss");
-        QString str = "INSERT INTO `scheme1`.pressures (`FN`,`TN`,`value`,`time`) VALUE('"+QString::number(fn)+
+        QString str = "INSERT INTO `schema1`.pressures (`FN`,`TN`,`value`,`time`) VALUE('"+QString::number(fn)+
                 "','"+QString::number(tn)+
                 "','"+value+
                 "','"+dateStr+"')";
