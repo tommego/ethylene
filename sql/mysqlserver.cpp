@@ -1,6 +1,12 @@
 #include "mysqlserver.h"
 #include <QDebug>
 #include "../global.h"
+#include <QDialog>
+#include <QFrame>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
 
 //时间转换
 static QDateTime get_cot_dateTime(QString str){
@@ -180,10 +186,10 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -281,6 +287,39 @@ void MysqlServer::dumpDatas (){
     exportExcel (fileName);
 }
 
+bool MysqlServer::isPushingIncompleteDatas(const QString& str)
+{
+    QDialog dialog;
+    QFont font;
+    font.setPixelSize(14);
+    dialog.setFont(font);
+    dialog.setFixedSize(500, 300);
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->addStretch();
+    QLabel* strLabel = new QLabel(&dialog);
+    strLabel->setText(str);
+    layout->addWidget(strLabel, 0 , Qt::AlignHCenter);
+    layout->addStretch();
+
+    QPushButton* okBnt = new QPushButton("继续", &dialog);
+    okBnt->setFixedHeight(40);
+    QPushButton* cancleBnt = new QPushButton("取消", &dialog);
+    cancleBnt->setFixedHeight(40);
+
+    QHBoxLayout* bntLayout = new QHBoxLayout;
+
+    bntLayout->addWidget(okBnt);
+    bntLayout->addWidget(cancleBnt);
+
+    layout->addLayout(bntLayout);
+    dialog.setLayout(layout);
+
+    connect(okBnt, &QPushButton::clicked, &dialog, &QDialog::accept);
+    connect(cancleBnt, &QPushButton::clicked, &dialog, &QDialog::reject);
+
+    return dialog.exec() == 0 ? false : true;
+}
+
 QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_DateTime, QDateTime to_DateTime){
 
     //管管比较厚存放的数据
@@ -292,10 +331,10 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -415,10 +454,10 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -624,10 +663,10 @@ int MysqlServer::currentUserAccess()
 QJsonArray MysqlServer::access_tube_in_temp(){
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open())
@@ -674,10 +713,10 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 QJsonArray MysqlServer::access_tube_out_temp(){
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open())
@@ -813,10 +852,10 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -1253,10 +1292,10 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
     m_access = access.toInt();
     m_currentUser = userName;
     currentUserAccessChanged();
@@ -1292,10 +1331,10 @@ QJsonArray MysqlServer::usersList()
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -1329,10 +1368,10 @@ bool MysqlServer::addUser(const QString &userName, const QString &pwd, const QSt
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -1361,10 +1400,10 @@ bool MysqlServer::removeUser(const QString &userName)
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -1389,10 +1428,10 @@ bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const 
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
@@ -1414,10 +1453,10 @@ bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const 
 {
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("139.199.211.202");
+    db.setHostName("47.92.49.44");
     db.setDatabaseName("schema1");
     db.setUserName("root");
-    db.setPassword("meng");
+    db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){

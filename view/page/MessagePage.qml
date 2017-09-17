@@ -23,19 +23,19 @@ Rectangle {
             }
 
             Text{
-                text:"版本号: V1.0"
+                text:"版本号: V1.0.1"
                 font.pixelSize: 20
                 color: "#454545"
             }
 
             Text{
-                text:"姓名: 黎才可"
+                text:"QQ: 790277935"
                 font.pixelSize: 20
                 color: "#454545"
             }
 
             Text{
-                text:"邮箱: licaike@deepin.com"
+                text:"邮箱: xiaoluzhe@gmail.com"
                 font.pixelSize: 20
                 color: "#454545"
             }

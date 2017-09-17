@@ -322,7 +322,7 @@ Rectangle {
         tubeCOTSlider.value=tubeCOTTempEdit.text;
         cycleEdit.text=ESINI.getValue("/YJS/cycle",12);
         cycleSlider.value=cycleEdit.text;
-        savePath.text=ESINI.getValue("/YJS/savrPath","");
+        savePath.text=ESINI.getValue("/YJS/savrPath","C:/ethylene");
 
     }
 

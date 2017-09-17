@@ -132,6 +132,9 @@ public:
     Q_INVOKABLE QString getSaveFilePath();
     void dumpDatas();
 
+    //是否导入不完整数据对话框
+    Q_INVOKABLE bool isPushingIncompleteDatas(const QString& str);
+
     //自动导出数据
     void dumpDatasLi();
     //导出excel

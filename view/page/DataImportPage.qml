@@ -9,11 +9,12 @@ import QtQuick.Controls 1.4
 Item {
     id:root
     anchors.fill: parent
-    property int currentFornace : 0
+    property int currentFornace : 5
     property int currentGroup: 0
     property int currentDisplayState:0
     property int currentPortIndex:0//串口索引值
     property bool readyReciveData:false//串口接收状态
+    property var requestPushData: []
     property var furnaces:[
         "H110","H111","H112","H113","H114","H115","H116","H117","H118","H119","H120"
     ]
@@ -395,6 +396,7 @@ Item {
         id:completeTimer
         interval: 1000
         onTriggered: {
+            messageText.text = "  正在上传数据，上传过程中请勿做其他操作，完成后自动关闭对话框。";
             var datas=serialPortManager.revDatas;
             serialPortManager.revDatas="";
             console.log("datas:\n",datas);
@@ -535,8 +537,16 @@ Item {
                             var tubenum=a+(g-1)*12;
 
                         var temp=Number(temp18s[a]);
+
+                        if(temp <= 200){
+                            var str = String(tubenum) + "号管数据为空，是否继续上传该数据？"
+                            if(server.isPushingIncompleteDatas(str))
+                                console.log("************* push invalid datas;")
+                                server.pushDatas(String(tubenum),String(s),String(location),String(temp),String(dateTime));
+                        } else{
 //                        console.log("temp:",temp18s[a],"   ",a);
                         server.pushDatas(String(tubenum),String(s),String(location),String(temp),String(dateTime));
+                        }
                     }
 //                    console.log("group:",g,"tubenum:",tubenum,"foruneNum:",s,"location:",location,"temp:",temp,"datetime:",dateTime);
 
@@ -578,9 +588,6 @@ Item {
                 msgDialog.errorStr="    数据导入成功！";
                 msgDialog.open();
             }
-            //刷新数据
-            refreshNewestDatas();
-
         }
     }
 
