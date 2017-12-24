@@ -88,6 +88,7 @@ ApplicationWindow {
                             FormTextEdit{
                                 id: userPwdTextEdit
                                 width: 200
+                                echoMode: TextInput.Password;//隐藏密码
                                 height: iconPwd.height
                                 holderText: "输入密码"
                             }

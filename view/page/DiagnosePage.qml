@@ -479,7 +479,7 @@ Item {
                                     id:analysisChartView
                                     width: parent.width
                                     height: 500
-                                    title: "入管温度／COT温度"
+                                    title: "结焦趋势"
                                     titleColor: fontColorNormal
                                     titleFont.pixelSize: 20
                                     antialiasing: true

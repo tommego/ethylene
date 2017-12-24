@@ -29,6 +29,8 @@ Item {
 
     //串口数据导入排错检测
     function checkStr(str){
+        //硬件那边的bug,记得提醒硬件组修改：
+        str = str.replace("???", "??")
         //排错1
         //校检符号为,的个数，是否整齐，单段104个
         var seg1=String(str).match(new RegExp(",","g"));

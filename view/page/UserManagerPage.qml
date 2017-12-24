@@ -205,6 +205,8 @@ Item {
                                                         if(userNameEditting){
                                                             userModel.setProperty(index,"userNameEditting",false);
                                                             root.forceActiveFocus();
+                                                            //加修改函数
+                                                            server.updateUser(userNameTextEditor.text,userPwd,userAccess,userId);
 //                                                            userNameTextEditor.enabled = false;
                                                         }
                                                         else{
@@ -271,6 +273,7 @@ Item {
                                                         if(userPwdEditting){
                                                             userModel.setProperty(index,"userPwdEditting",false);
                                                             root.forceActiveFocus();
+                                                            server.updateUser(userName,userPwdTextEditor.text,userAccess,userId);
                                                         }
                                                         else{
                                                             userModel.setProperty(index,"userPwdEditting",true);
