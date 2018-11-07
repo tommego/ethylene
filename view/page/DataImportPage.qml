@@ -8,7 +8,7 @@ import QtQuick.Controls 1.4
 //数据导入页面
 Item {
     id:root
-    anchors.fill: parent
+//    anchors.fill: parent
     property int currentFornace : 5
     property int currentGroup: 0
     property int currentDisplayState:0

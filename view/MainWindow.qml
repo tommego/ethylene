@@ -1,5 +1,8 @@
 import QtQuick 2.0
 import "./bar"
+import "./page"
+import QtQml.Models 2.11
+import QtQuick.Controls 2.4
 //功能选择栏
 Item {
     id:mainWindow
@@ -70,14 +73,35 @@ Item {
             height: parent.height
             dataModel: menuList
             onIndexChanged: {
-                loader.source = menuList.get(index).content
+//                loader.source = menuList.get(index).content
+                pageListView.positionViewAtIndex(index, ListView.Beginning)
             }
         }
-        Loader{
-            id:loader
+        ListView{
+            id:pageListView
+            ObjectModel{
+                id: viewModel
+                DataImportPage{width: pageListView.width; height: pageListView.height}
+                DataSearchPage{width: pageListView.width; height: pageListView.height}
+                TubesComparePage{width: pageListView.width; height: pageListView.height}
+                DiagnosePage{width: pageListView.width; height: pageListView.height}
+                PressureDataImportPage{width: pageListView.width; height: pageListView.height}
+                UserManagerPage{width: pageListView.width; height: pageListView.height}
+                SettingPage{width: pageListView.width; height: pageListView.height}
+                MessagePage{width: pageListView.width; height: pageListView.height}
+            }
+            highlightRangeMode: ListView.StrictlyEnforceRange
+            model: viewModel
+            currentIndex: 0
             width: parent.width-leftbar.width
             height:parent.height
-            source: "qrc:/view/page/DataImportPage.qml"
+            snapMode: ListView.SnapOneItem
+            Component.onCompleted: {
+                positionViewAtIndex(0, ListView.Beginning)
+            }
+            onCurrentIndexChanged: {
+                leftbar.currentIndex = currentIndex
+            }
         }
     }
 }

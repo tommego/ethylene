@@ -7,7 +7,7 @@ import QtQuick.Dialogs 1.2
 import QtGraphicalEffects 1.0
 Item {
     id:root
-    anchors.fill: parent
+//    anchors.fill: parent
     property date fromDate: new Date("2016-01-01 00:00:00")
     property date toDate:new Date("2016-01-20 00:00:00")
 

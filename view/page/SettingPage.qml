@@ -4,7 +4,7 @@ import "../Widget"
 //相关参数(警戒温度, 备份周期等)录入页
 Rectangle {
     id:root
-    anchors.fill: parent
+//    anchors.fill: parent
 
     Rectangle{
         anchors.centerIn: parent

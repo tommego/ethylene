@@ -7,7 +7,19 @@ Item {
     property int currentIndex: 0
     signal indexChanged(var index);
     property var dataModel;
-    onCurrentIndexChanged: indexChanged(currentIndex)
+//    onCurrentIndexChanged: indexChanged(currentIndex)
+
+    function updateStatus() {
+        for(var a = 0 ; a<menuList.count ; a++){
+            if (a === currentIndex)
+                menuList.setProperty(a,"selected",true);
+            else
+                menuList.setProperty(a,"selected",false);
+        }
+    }
+    onCurrentIndexChanged: {
+        updateStatus()
+    }
 
     //background
     Rectangle{
@@ -42,15 +54,9 @@ Item {
                         text: title
 
                         onBntClicked: {
-                            if(currentIndex === index)
-                                return;
-                            for(var a = 0 ; a<menuList.count ; a++){
-                                if(menuList.get(a).selected){
-                                    menuList.setProperty(a,"selected",false);
-                                }
-                            }
-                            menuList.setProperty(index,"selected",true);
                             currentIndex = index;
+                            updateStatus()
+                            indexChanged(currentIndex)
                         }
                     }
                 }

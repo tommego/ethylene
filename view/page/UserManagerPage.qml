@@ -5,7 +5,7 @@ import QtQuick.Controls.Styles 1.4
 
 Item {
     id:root
-    anchors.fill: parent
+//    anchors.fill: parent
 
     function refreshData(){
         userModel.clear();

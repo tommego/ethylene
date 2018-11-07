@@ -5,7 +5,7 @@ import QtQuick.Controls.Styles 1.4
 //压力数据录入页
 Item {
     id:root
-    anchors.fill: parent
+//    anchors.fill: parent
 
     property int currentFornace : 0
     property int currentGroup: 0
