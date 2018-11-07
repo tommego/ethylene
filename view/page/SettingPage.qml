@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Dialogs 1.0
 import "../Widget"
-
+//相关参数(警戒温度, 备份周期等)录入页
 Rectangle {
     id:root
     anchors.fill: parent

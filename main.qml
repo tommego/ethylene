@@ -16,9 +16,11 @@ ApplicationWindow {
     minimumWidth: windowWidth
 
     //Main Window
+    //MainWindow.qml作为控件被包裹进来
     MainWindow{
         anchors.fill: parent
     }
+    //软件顶部的工具栏
     menuBar: MenuBar {
         Menu {
             title: "用户"

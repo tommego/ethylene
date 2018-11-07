@@ -67,7 +67,9 @@ class MysqlServer : public QObject
 {
     Q_OBJECT
 public:
+    //初始化相关对象的实现与设置
     explicit MysqlServer(QObject *parent = 0);
+    //单例模式
     static MysqlServer* instance();
     //插入数据到数据库中
     Q_INVOKABLE void pushDatas(QString tubeNum,//炉号
@@ -78,19 +80,21 @@ public:
                                );
     //计算日平均温度处理算法
     void mdeal_with(QList<datas_time> *mdt);
-    //进行时间排序
+    //进行时间排序 将数据按时间进行排序
     void sortData(QList<datas_time> *mdt);
     //管管比较
     Q_INVOKABLE QJsonArray compare_datas(int forunceNum,int tubeNum,QDateTime from_DateTime,QDateTime to_DateTime);
-    //炉管诊断
+    //炉管诊断 根据条件返回压力数据
     Q_INVOKABLE QJsonArray pressureData(int forunceNum,int tubeNum,QDateTime from_DateTime,QDateTime to_DateTime);
-    //全管查询
+    //全管查询 根据炉号时间为条件以JSON格式返回所有管的数据
     Q_INVOKABLE QJsonObject all_tube_show(int forunceNum,QDateTime from_DateTime, QDateTime to_DateTime);
     Q_PROPERTY(QString currentUser READ currentUser NOTIFY currentUserChanged)
+    //返回当前用户对象
     QString currentUser();
+    //返回当前用户对象权限
     Q_PROPERTY(int currentUserAccess READ currentUserAccess NOTIFY currentUserAccessChanged)
     int currentUserAccess();
-    //获取最新的入管，出管，ＣＯＴ温度
+    //获取最新的入管，出管，ＣＯＴ温度 以JSON数组的格式返回
     Q_INVOKABLE QJsonArray access_tube_in_temp();
     Q_INVOKABLE QJsonArray access_tube_out_temp();
     Q_INVOKABLE QJsonArray access_tube_cot_temp();
@@ -100,6 +104,7 @@ public:
         this->access_tube_out_temp();
 //        this->access_tube_cot_temp();
     }
+    //设置备份路径
     Q_INVOKABLE void setDumpPath(QString path);
 
     //登陆
@@ -130,6 +135,7 @@ public:
 
     //获取保存图片路径
     Q_INVOKABLE QString getSaveFilePath();
+    //备份数据为excel 每月备份一次当月的数据
     void dumpDatas();
 
     //是否导入不完整数据对话框
@@ -149,7 +155,7 @@ signals:
 
     void dumpDataOver();
 public slots:
-    //导出EXCEl
+    //导出EXCEl 指定导出路径并导出excel
     bool exportExcel1();      //手动导出excel
     void exportExcel(QString creatPath);
 

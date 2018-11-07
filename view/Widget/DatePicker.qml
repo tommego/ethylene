@@ -17,7 +17,7 @@ Item {
     onDayChanged: {
         if(day.length == 1){
             if(day <10 ){
-                day = "0" + Number(month).toString();
+                day = "0" + Number(day).toString();
             }
         }
     }

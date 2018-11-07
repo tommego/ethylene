@@ -23,7 +23,7 @@ Item {
                    });
         }
     }
-
+    //用户信息列表
     ListModel{
         id: userModel
         Component.onCompleted: {
@@ -201,7 +201,6 @@ Item {
                                                             userModel.setProperty(a,"userNameEditting",false);
                                                         }
 
-
                                                         if(userNameEditting){
                                                             userModel.setProperty(index,"userNameEditting",false);
                                                             root.forceActiveFocus();
@@ -255,7 +254,7 @@ Item {
                                                     }
                                                 }
                                             }
-
+                                            //修改按钮
                                             Image {
                                                 source: "qrc:/imgs/icons/modify.png"
                                                 anchors.verticalCenter: parent.verticalCenter
@@ -354,7 +353,7 @@ Item {
             }
         }
     }
-
+//添加新用户对话框
     CustomDialog{
         id:addUserDialog
         title: "添加新用户"

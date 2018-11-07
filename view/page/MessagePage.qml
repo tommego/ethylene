@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+//版本信息页(相当于一般软件的关于)
 Rectangle {
     id:root
     anchors.fill: parent

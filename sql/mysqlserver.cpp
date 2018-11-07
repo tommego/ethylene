@@ -8,11 +8,12 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-//时间转换
+//时间转换 转换时间为一般格式
 static QDateTime get_cot_dateTime(QString str){
     QString t = str;
 
     QString t1;
+    //从索引为3的位置，取3个字符
     if(t.mid(3,3)=="JAN"){
         t1 = t.replace(3,3,"01").insert(6,"20").remove(19,2);
     }
@@ -53,6 +54,7 @@ static QDateTime get_cot_dateTime(QString str){
     QDateTime time = QDateTime::fromString(t1, "dd-MM-yyyy hh:mm:ss");
     return time;
 }
+//转换时间为一般格式并返回时间的日期部分
 static QDate get_cot_date(QString str){
     QString t = str;
 
@@ -97,6 +99,7 @@ static QDate get_cot_date(QString str){
     QDateTime time = QDateTime::fromString(t1, "dd-MM-yyyy hh:mm:ss");
     return time.date();
 }
+//根据索引返回月份的文本格式
 static QString get_cot_date_month(int month){
 
     if(month==1){
@@ -136,9 +139,9 @@ static QString get_cot_date_month(int month){
         return "DEC";
     }
 }
-
+//将数据根据时间排序, 并将每一天的数据合并,值为一天的平均值
 void MysqlServer::mdeal_with(QList<datas_time> *mdt){
-//    qDebug()<<mdt->count();
+    //    qDebug()<<mdt->count();
     if(mdt->count()==0)
         return;
 
@@ -155,28 +158,30 @@ void MysqlServer::mdeal_with(QList<datas_time> *mdt){
     for(int a=1;a<mdt->count();a++){
         if(mdt->at(a).time.date()==mdt->at(a-1).time.date()){
             (*mdt)[a-1].temp=(mdt->at(a).temp+mdt->at(a-1).temp)/2;
+            //在索引位置删除该元素
             mdt->takeAt(a);
+            //a代表了以天为单位的计数
             a--;
         }
     }
 
 }
-
+//将数据按时间进行排序
 void MysqlServer::sortData (QList<datas_time> *mdt){
-        if(mdt->count()==0)
-            return;
+    if(mdt->count()==0)
+        return;
 
-        //时间排序整理
+    //时间排序整理
 
-        for(int a=0;a<mdt->count();a++){
-            for(int b=a;b<mdt->count();b++){
-                if(mdt->at(a).time>mdt->at(b).time){
-                    mdt->swap(a,b);
-                }
+    for(int a=0;a<mdt->count();a++){
+        for(int b=a;b<mdt->count();b++){
+            if(mdt->at(a).time>mdt->at(b).time){
+                mdt->swap(a,b);
             }
         }
+    }
 }
-
+//插入数据到数据库
 void MysqlServer::pushDatas(QString tubeNum,//炉号
                             QString forunNum,//管号
                             QString location,//位置（tube in ,tube out ,tube cot)
@@ -186,7 +191,7 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -214,7 +219,7 @@ void MysqlServer::pushDatas(QString tubeNum,//炉号
         return;
     }
 
-//    INSERT INTO `schema1`.`table_out` (`idtable_out`, `FN`, `TN`, `Temp`, `Time`) VALUES ('1001', '5', '12', '970', '2015-02-19 09:20:23');
+    //    INSERT INTO `schema1`.`table_out` (`idtable_out`, `FN`, `TN`, `Temp`, `Time`) VALUES ('1001', '5', '12', '970', '2015-02-19 09:20:23');
     //检查已经没有重复数据后把数据插入表中
     querystr="INSERT INTO `schema`.`"+table+"` (`FN`,`TN`,`Temp`,`Time`) VALUES ('"+forunNum+"','"+tubeNum+"','"+temp+"','"+dataTime+"')";
     query.clear();
@@ -246,16 +251,16 @@ MysqlServer::MysqlServer(QObject *parent) :
         my_ethlene_datas.time1[a] = QDateTime();
         my_ethlene_datas.time2[a] = QDateTime();
     }
-//    QAxObject *excel;
-//    QAxObject *workbooks;
-//    QAxObject *workbook;
-//    QAxObject *worksheets;
-//    QAxObject *worksheet;
+    //    QAxObject *excel;
+    //    QAxObject *workbooks;
+    //    QAxObject *workbook;
+    //    QAxObject *worksheets;
+    //    QAxObject *worksheet;
     this->excel=Q_NULLPTR;
     this->workbook=Q_NULLPTR;
     this->workbooks=Q_NULLPTR;
-//    this->worksheet=Q_NULLPTR;
-//    this->worksheets=Q_NULLPTR;
+    //    this->worksheet=Q_NULLPTR;
+    //    this->worksheets=Q_NULLPTR;
 
     //备份excel数据
     //    dumpDatas ();
@@ -268,6 +273,7 @@ MysqlServer *MysqlServer::instance()
         instance = new MysqlServer();
     return instance;
 }
+//备份数据，每月备份一次当月的数据
 void MysqlServer::dumpDatas (){
     //备份数据，每月备份一次当月的数据
     QDate date=QDate::currentDate ();
@@ -279,14 +285,14 @@ void MysqlServer::dumpDatas (){
     date.setDate (date.year (),date.month (),1);
     QDateTime fromDate(date);
     date.setDate (date.year (),date.month (),date.daysInMonth ());
-//    QTime toTime;
-//    toTime.setHMS (23,59,59);
+    //    QTime toTime;
+    //    toTime.setHMS (23,59,59);
     QDateTime toDate(date);
-//    toDate.setTime (toTime);
+    //    toDate.setTime (toTime);
     this->all_tube_show (5,fromDate,toDate);
     exportExcel (fileName);
 }
-
+//弹出警告对话框,并将参数作为内容
 bool MysqlServer::isPushingIncompleteDatas(const QString& str)
 {
     QDialog dialog;
@@ -320,18 +326,17 @@ bool MysqlServer::isPushingIncompleteDatas(const QString& str)
     return dialog.exec() == 0 ? false : true;
 }
 
+//管管比较之带cot
+//根据炉号管号时间为条件以JSON格式返回管管比较所需要的数据
 QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_DateTime, QDateTime to_DateTime){
 
     //管管比较厚存放的数据
     QList<datas_time> tube_in_compare_datas;
     QList<datas_time> tube_out_compare_datas;
     QList<datas_time> tube_cot_compare_datas;
-//    QList<datas_time> pressure_compare_datas;
-
-
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -344,7 +349,6 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
     else{
         qDebug()<<"faled to connect to database";
     }
-
     //数据库查询对象
     QSqlQuery query;
     //过滤入管的数据语句
@@ -360,18 +364,14 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
         data.temp=query.value("Temp").toInt();
         tube_in_compare_datas.append(data);
     }
-
     //清空查询条件
     query.clear();
-
     //过滤出管的数据语句
     QString sqlstr2="select * from table_out where FN="+QString::number (forunceNum)+
             " and TN='"+QString::number (tubeNum)+"'"+
             " and Time>='"+from_DateTime.date ().toString ("yyyy-MM-dd")+"'"+
             " and Time<='"+to_DateTime.date ().toString ("yyyy-MM-dd")+"'";
-
     query.exec(sqlstr2);
-
     //获取出管数据
     while(query.next()){
         datas_time data;
@@ -379,33 +379,67 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
         data.temp=query.value("Temp").toInt();
         tube_out_compare_datas.append(data);
     }
-//    query.clear();
 
-//    //压力数据
-//    QString sqlstr3="select * from pressures where FN="+QString::number (forunceNum)+
-//            " and TN='"+QString::number (tubeNum)+"'"+
-//            " and time>='"+from_DateTime.date ().toString ("yyyy-MM-dd")+"'"+
-//            " and time<='"+to_DateTime.date ().toString ("yyyy-MM-dd")+"'";
-
-//    query.exec(sqlstr3);
-
-    //获取数据
-//    while(query.next()){
-//        datas_time data;
-//        data.time=query.value("time").toDateTime();
-//        data.temp=query.value("value").toInt();
-//        pressure_compare_datas.append(data);
-//    }
 
     //关闭数据库
     db.close();
+    //获取cot数据
+    //创建石油厂数据接口
+    QSqlDatabase cotdb=QSqlDatabase::addDatabase("QODBC");
 
-    /**
-     *由于显示温度时间单位是天，所以需要处理，求出一天平均温度
-     */
+    //连接石油厂数据库
+    cotdb.setHostName("10.112.200.22");
+    cotdb.setDatabaseName("History");
+    cotdb.setPort(10014);
+
+    bool existCot=false;
+
+    if(cotdb.open()){
+        existCot = true;
+        qDebug()<<"remote database is established!";
+        for ( int tubeNum = 1 ; tubeNum < 49 ; tubeNum++){
+            QSqlQuery query1;
+            query1.setForwardOnly(true);
+            if(tubeNum<10){
+                QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
+                QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
+                query1.exec("select name,ts,value from history where name like 'TI160"+QString::number(tubeNum, 10)+"_"+QString::number(forunceNum, 10)+"' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
+                while(query1.next()){
+                    datas_time data;
+                    data.time=get_cot_dateTime(query1.value(1).toString());
+                    data.temp=query1.value(2).toInt();
+                    qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
+                    tube_cot_compare_datas.append(data);
+                }
+            }
+            else {
+                QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
+                QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
+                query1.exec("select name,ts,value from history where name like 'TI16"+QString::number(tubeNum, 10)+"_"+QString::number(forunceNum, 10)+"' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
+
+                while(query1.next()){
+                    datas_time data;
+                    data.time=get_cot_dateTime(query1.value(1).toString());
+                    data.temp=query1.value(2).toInt();
+                    qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
+                    tube_cot_compare_datas.append(data);
+                }
+            }
+        }
+        cotdb.close();
+        //将数据根据时间排序, 并将每一天的数据合并,值为一天的平均值
+        mdeal_with(&tube_cot_compare_datas);
+    }
+    else{
+        qDebug()<<"faled to connect to remote database";
+
+    }
+
+    //将数据根据时间排序, 并将每一天的数据合并,值为一天的平均值
     mdeal_with(&tube_in_compare_datas);
+    //将数据根据时间排序, 并将每一天的数据合并,值为一天的平均值
     mdeal_with(&tube_out_compare_datas);
-//    mdeal_with(&pressure_compare_datas);
+
 
     //封装json数据库，给qml使用
     QJsonArray jsarr;
@@ -417,7 +451,10 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
         //temp out
         obj1.insert ("temp_out",tube_out_compare_datas.at(a).temp);
         //temp cot
-        obj1.insert ("temp_cot",tube_out_compare_datas.at(a).temp);
+        if(existCot){
+            obj1.insert ("temp_cot",tube_cot_compare_datas.at(a).temp);
+        }
+
 
         jsarr.append (obj1);
     }
@@ -430,7 +467,9 @@ QJsonArray MysqlServer::compare_datas(int forunceNum,int tubeNum,QDateTime from_
     return jsarr;
 }
 
-//全部显示
+
+//全部显示之带cot
+//根据炉号时间为条件以JSON格式返回所有管的数据
 QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, QDateTime to_DateTime){
 
     QJsonObject root;
@@ -441,7 +480,7 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
     from_DateTime.setTime(QTime(0,0));
     to_DateTime.setTime(QTime(23,59,59));
 
-//    qDebug()<<"全部显示的日期为："<<from_DateTime.toString(Qt::ISODate)<<"  到  "<<to_DateTime.toString(Qt::ISODate);
+    //    qDebug()<<"全部显示的日期为："<<from_DateTime.toString(Qt::ISODate)<<"  到  "<<to_DateTime.toString(Qt::ISODate);
 
     //清空数据
     for(int i = 0 ; i <48 ; i++){
@@ -449,19 +488,15 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
         tube_out_full_search_datas[i].clear();
         tube_cot_full_search_datas[i].clear();
     }
-
-
-    /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
 
     //链接数据库
     if(db.open()){
-
         qDebug()<<"database is established!";
     }
     else{
@@ -476,7 +511,10 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
             " and Time>='"+from_DateTime.date ().toString ("yyyy-MM-dd")+"'"+
             " and Time<='"+to_DateTime.date ().toString ("yyyy-MM-dd")+"'";
     query.exec (sqlstr1);
+
+    int ttilikaibin=0;
     while(query.next ()){
+        ttilikaibin++;
         const int& tn = query.value("TN").toInt();
         const int& temp = query.value("Temp").toInt();
         const QDateTime& dt = query.value("Time").toDateTime();
@@ -491,7 +529,7 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
         data.temp = temp;
         tube_in_full_search_datas[tn - 1].append (data);
     }
-
+    qDebug()<<"应该是这？："<<ttilikaibin<<endl;
     query.clear ();
     sqlstr1="select * from table_out where FN="+QString::number (forunceNum)+
             " and Time>='"+from_DateTime.date ().toString ("yyyy-MM-dd")+"'"+
@@ -515,19 +553,70 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
         get_outTime_forCot[tn - 1].append(data.time);
     }
 
-    //sort data
-    for(int a=0;a<48;a++){
-        sortData (&tube_in_full_search_datas[a]);
-        sortData (&tube_out_full_search_datas[a]);
+    //获取cot数据
+    //创建石油厂数据接口
+    QSqlDatabase cotdb=QSqlDatabase::addDatabase("QODBC");
+
+    //连接石油厂数据库
+    cotdb.setHostName("10.112.200.22");
+    cotdb.setDatabaseName("History");
+    cotdb.setPort(10014);
+
+    bool existCot =false;
+
+    if(cotdb.open()){
+        qDebug()<<"remote database is established!";
+        existCot = true;
+        for ( int tubeNum = 1 ; tubeNum < 49 ; tubeNum++){
+            QSqlQuery query1;
+            query1.setForwardOnly(true);
+            if(tubeNum<10){
+                QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
+                QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
+                query1.exec("select name,ts,value from history where name like 'TI160"+QString::number(tubeNum, 10)+"_"+QString::number(forunceNum, 10)+"' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
+                while(query1.next()){
+                    datas_time data;
+                    data.time=get_cot_dateTime(query1.value(1).toString());
+                    data.temp=query1.value(2).toInt();
+                    qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
+                    tube_cot_full_search_datas[tubeNum-1].append(data);
+                }
+            }
+            else {
+                QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
+                QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
+                query1.exec("select name,ts,value from history where name like 'TI16"+QString::number(tubeNum, 10)+"_"+QString::number(forunceNum, 10)+"' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
+
+                while(query1.next()){
+                    datas_time data;
+                    data.time=get_cot_dateTime(query1.value(1).toString());
+                    data.temp=query1.value(2).toInt();
+                    qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
+                    tube_cot_full_search_datas[tubeNum-1].append(data);
+                }
+            }
+        }
+
+        for(int a=0;a<48;a++){
+            sortData(&tube_cot_full_search_datas[a]);
+        }
+    }
+    else{
+        qDebug()<<"faled to connect to remote database";
+
     }
 
+
+    //生成json数据
     for(int a=0;a<48;a++){
         QJsonArray jsarr1;
         QJsonArray jsarr2;
+        QJsonArray jsarr3;
         for(auto it:tube_in_full_search_datas[a]){
             QJsonObject obj;
             obj.insert ("time",it.time.toString ("yy/M/d hh:mm:ss"));
             obj.insert ("temp",it.temp);
+            //qDebug()<<"time"<<it.time.toString ("yy/M/d hh:mm:ss")<<"  Temp:"<<it.temp;
             jsarr1.append (obj);
         }
         for(auto it:tube_out_full_search_datas[a]){
@@ -536,14 +625,24 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
             obj.insert ("temp",it.temp);
             jsarr2.append (obj);
         }
+        if(existCot){
+            for(auto it:tube_cot_full_search_datas[a]){
+                QJsonObject obj;
+                obj.insert ("time",it.time.toString ("yy/M/d hh:mm:ss"));
+                obj.insert ("temp",it.temp);
+                jsarr3.append (obj);
+            }
+        }
+
         QJsonObject o1;
         QJsonObject o2;
         QJsonObject o3;
         o1.insert("data",jsarr1);
         o2.insert("data",jsarr2);
-        o3.insert("data",jsarr1);
+        o3.insert("data",jsarr3);
         tubeInData.append (o1);
         tubeOutData.append (o2);
+        qDebug()<<"YY1:"+jsarr1.count();//<<"YY2:"<<jsarr2.count()<<"YY3:"<<jsarr1.count<<endl;
 
         //test for cot data
         tubeCotData.append (o3);
@@ -551,119 +650,47 @@ QJsonObject MysqlServer::all_tube_show(int forunceNum,QDateTime from_DateTime, Q
 
     root.insert ("tubeInData",tubeInData);
     root.insert ("tubeOutData",tubeOutData);
-    root.insert ("tubeCotData",tubeCotData);
+    if(existCot){
+        root.insert ("tubeCotData",tubeCotData);
+        cotdb.close();
+    }else {
+        root.insert("tubeCotData","null");
+    }
+    
+
 
     //关闭数据库
     db.close();
 
     //test
+    qDebug()<<"LLL:"<<QString(QJsonDocument(root).toJson());
+
     return root;
-
-
-    /**********************************查询本机的数据库**********************************/
 
     //    //处理数据
     //    qDebug()<<"数据处理****************：“";
     //    mdeal_with(&tube_in_show_datas);
     //    mdeal_with(&tube_out_show_datas);
 
-    /**********************************查询石油那边的数据库**********************************/
-    //创建石油厂数据接口
-    db=QSqlDatabase::addDatabase("QODBC");
-
-    //连接石油厂数据库
-    db.setHostName("10.112.200.22");
-    db.setDatabaseName("History");
-    db.setPort(10014);
-
-
-    if(db.open()){
-
-        qDebug()<<"remote database is established!";
-    }
-    else{
-        qDebug()<<"faled to connect to remote database";
-        return root;
-    }
-
-
-    //通过链接石油厂数据库加载COT温度数据
-
-
-    for ( int tubeNum = 1 ; tubeNum < 49 ; tubeNum++){
-
-
-        QSqlQuery query1;
-        query1.setForwardOnly(true);
-        if(tubeNum<10){
-            QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
-            QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
-            query1.exec("select name,ts,value from history where name like 'TI160"+QString::number(tubeNum, 10)+"_3' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
-            while(query1.next()){
-                //                if(/*get_cot_dateTime(query1.value(1).toString()) == get_outTime_forCot[tubeNum-1].at(0) && */query1.value(0).toString().mid(4,2).toInt()==tubeNum   /*&&query1.value(0).toString().right(1).toInt()==forunceNum*/){
-//                qDebug()<<query1.value(0).toString();
-                qDebug()<<"get_cot_dateTime ==========================="<<get_cot_dateTime(query1.value(1).toString());
-//                qDebug()<<get_outTime_forCot[tubeNum-1].at(0);
-
-                //                        datas_time data;
-                //                        data.time=get_cot_dateTime(query1.value(1).toString());
-                //                        data.temp=query1.value(2).toInt();
-                //                        qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
-                //                        tube_cot_full_search_datas[tubeNum-1].append(data);
-
-                //                }
-            }
-        }
-        else {
-            QString time1String = QString::number(from_DateTime.date().day(), 10)+"-"+get_cot_date_month(from_DateTime.date().month())+"-"+QString::number(from_DateTime.date().year(), 10).right(2);
-            QString time2String = QString::number(to_DateTime.date().day(), 10)+"-"+get_cot_date_month(to_DateTime.date().month())+"-"+QString::number(to_DateTime.date().year(), 10).right(2);
-            query1.exec("select name,ts,value from history where name like 'TI16"+QString::number(tubeNum, 10)+"_3' and ts >='"+time1String+" 00:00:00.0' and ts<='"+time2String+" 23:59:59.0'");
-
-            while(query1.next()){
-                //                    if(/*get_cot_dateTime(query1.value(1).toString()) == get_outTime_forCot[get_all_tube_out_count(tubeNum)-1] &&*/query1.value(0).toString().mid(4,2).toInt()==tubeNum&&query1.value(0).toString().right(1).toInt()==forunceNum){
-                //                        datas_time data;
-                //                        data.time=get_cot_dateTime(query1.value(1).toString());
-                //                        data.temp=query1.value(2).toInt();
-                //                        qDebug()<<"tubeCotNum : "<<tubeNum<<"time : "<<data.time<<"temp : "<<data.temp;
-                //                        tube_cot_full_search_datas[tubeNum-1].append(data);
-
-                //                    }
-            }
-
-
-
-
-
-            /**********************************查询石油那边的数据库**********************************/
-
-            //        //处理数据
-            //        qDebug()<<"数据处理****************：“";
-            //        mdeal_with(&tube_cot_show_datas);
-
-        }
-
-    }
-
-    //断开远程数据库连接
-    db.close();
 }
 
+//返回当前用户对象
 QString MysqlServer::currentUser()
 {
     return m_currentUser;
 }
-
+//返回当前用户对象权限
 int MysqlServer::currentUserAccess()
 {
     return m_access;
 }
 
 
-//获取 入管,出管,ＣＯＴ 的最新温度
+//获取 入管 的最新温度
 QJsonArray MysqlServer::access_tube_in_temp(){
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -676,11 +703,12 @@ QJsonArray MysqlServer::access_tube_in_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("SELECT * FROM schema.table_in where Time in(select max(Time) from schema.table_in group by TN)");
+//    query.exec("SELECT * FROM schema.table_in where Time in(select max(Time) from schema.table_in group by TN)");
+    query.exec("SELECT * FROM table_in ORDER BY table_in.Time DESC");
 
     //json 数据
     QJsonArray jsarr;
-//    QJsonObject root;
+    //    QJsonObject root;
 
     //数据获取
     while(query.next()){
@@ -698,6 +726,7 @@ QJsonArray MysqlServer::access_tube_in_temp(){
         //保存最新温度数据，方便后面作时间比较
         my_ethlene_datas.tube_in_temps[tn-1] = temp;
         my_ethlene_datas.time[tn-1] = dt;
+//        qDebug() << tn << temp;
     }
     for(int i = 0; i < 48; i++){
         QJsonObject jsobj;
@@ -707,13 +736,14 @@ QJsonArray MysqlServer::access_tube_in_temp(){
     }
     //关闭数据库
     db.close();
-//    root.insert ("datas",jsarr);
+    //    root.insert ("datas",jsarr);
     return jsarr;
 }
+//获取 出管 的最新温度
 QJsonArray MysqlServer::access_tube_out_temp(){
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -729,7 +759,8 @@ QJsonArray MysqlServer::access_tube_out_temp(){
 
     //获取数据
     QSqlQuery query;
-    query.exec("SELECT * FROM schema.table_out where Time in(select max(Time) from schema.table_out group by TN)");
+//    query.exec("SELECT * FROM schema.table_out where Time in(select max(Time) from schema.table_out group by TN)");
+    query.exec("SELECT	* FROM	table_out ORDER BY	table_out.Time DESC");
 
     //数据获取
     while(query.next()){
@@ -759,6 +790,8 @@ QJsonArray MysqlServer::access_tube_out_temp(){
     return jsarr;
 
 }
+
+//获取 ＣＯＴ 的最新温度
 //转换成单独CotServer
 QJsonArray MysqlServer::access_tube_cot_temp(){
     //链接石油厂数据
@@ -782,7 +815,7 @@ QJsonArray MysqlServer::access_tube_cot_temp(){
     //通过链接石油厂数据库加载COT温度数据
     QSqlQuery query1;
     query1.setForwardOnly(true);
-//    qDebug()<<query1.isForwardOnly();
+    //    qDebug()<<query1.isForwardOnly();
 
 
     //第一种查询方法：48次查询来初始化cot数据
@@ -842,7 +875,7 @@ QJsonArray MysqlServer::access_tube_cot_temp(){
 
 //使用详细看压缩文件中的说明文档。ODBC配置后，SQL语句访问实时数据库的表名为history，字段名分别为name（位号）、ts（时间）、value（值）。这里的位号就是炉管号，如48号管，位号就是TI1648_5，45号管，位号就是TI1645_5；时间格式是“日-月-年”，且月份用英文缩写；值就是对应炉管的COT值。一个例子：select name,ts,value
 
-//诊断与检测函数
+//诊断与检测函数 根据条件返回压力数据
 QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_DateTime,QDateTime to_DateTime){
     //清空数据
     pressure_test_datas.clear();
@@ -852,7 +885,7 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     /**********************************查询本机的数据库**********************************/
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -900,7 +933,7 @@ QJsonArray MysqlServer::pressureData(int forunceNum,int tubeNum,QDateTime from_D
     }
     return pressureData;
 }
-
+//指定导出路径并导出excel(带COT版)
 bool MysqlServer::exportExcel1()      //手动导出excel
 {
 
@@ -935,13 +968,13 @@ bool MysqlServer::exportExcel1()      //手动导出excel
 
             worksheet = worksheets->querySubObject("Item(const QString&)", "exportExcel");//获取工作表集合的工作表名
 
-            //写表头
+            //写表头，第一行
             QAxObject *header;
             QString  headerStr;
             qDebug()<<"bool excell 2"<<endl;
             for ( int j = 1 ; j < 49 ; j++)
             {
-                header = worksheet->querySubObject("Cells(int,int)", 1,5*j-4);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 1,6*j-5);//获取单元格
                 headerStr = "第"+ QString::number(j) + "号管";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header = header->querySubObject("Font");
@@ -961,61 +994,71 @@ bool MysqlServer::exportExcel1()      //手动导出excel
             }
             //左右居中 合并单元格
             qDebug()<<"bool excell 4"<<endl;
-            for ( int j = 1 ; j < 241 ; j++)
+            for ( int j = 1 ; j < 289 ; j++)
             {
                 QString cell;
                 cell.append(AAZZ.at(j));
                 cell.append(QString::number(1));
                 cell.append(":");
-                cell.append(AAZZ.at(j+4));
+                cell.append(AAZZ.at(j+5));
                 cell.append(QString::number(1));
                 QAxObject *range = worksheet->querySubObject("Range(const QString&)", cell);
                 //                range->setProperty("VerticalAlignment", -4108);//xlCenter上下居中
                 range->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 range->setProperty("WrapText", true);
                 range->setProperty("MergeCells", true);
-                j = j+4;
+                j = j+5;
             }
             //表头
             qDebug()<<"bool excell 5"<<endl;
             for ( int j = 1 ; j < 49 ; j++)
             {
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-4);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-5);//获取单元格
                 headerStr = "入管时间";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
                 QString columnsStr;
-                columnsStr = AAZZ.at(5*j-4) + ":"+AAZZ.at(5*j-4);
+                columnsStr = AAZZ.at(6*j-5) + ":"+AAZZ.at(6*j-5);
                 header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
                 header->setProperty("ColumnWidth", 27);//设置列宽
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-3);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-4);//获取单元格
                 headerStr = "入管温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-2);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-3);//获取单元格
                 headerStr = "出管时间";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
-                columnsStr = AAZZ.at(5*j-2) + ":"+AAZZ.at(5*j-2);
+                columnsStr = AAZZ.at(6*j-3) + ":"+AAZZ.at(6*j-3);
                 header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
                 header->setProperty("ColumnWidth", 27);//设置列宽
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-1);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-2);//获取单元格
                 headerStr = "出管温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-0);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-1);//获取单元格
+                headerStr = "Cot时间";
+                header->dynamicCall("Value", headerStr);//设置单元格的值
+                header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
+                header = header->querySubObject("Font");
+                header->setProperty("Bold", true);//设置黑体
+                columnsStr = AAZZ.at(6*j-1) + ":"+AAZZ.at(6*j-1);
+                header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
+                header->setProperty("ColumnWidth", 27);//设置列宽
+
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-0);//获取单元格
                 headerStr = "COT温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
@@ -1023,13 +1066,6 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 header->setProperty("Bold", true);//设置黑体
             }
             //左右居中
-            qDebug()<<"bool excell 6"<<endl;
-            for ( int j = 1 ; j < 241 ; j++)
-            {
-                header = worksheet->querySubObject("Cells(int,int)", 3,j);//获取单元格
-                header->dynamicCall("Value", QString::number(j));//设置单元格的值
-                header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
-            }
             //写数据
             QAxObject *datas;
             QString  datasStr;
@@ -1042,12 +1078,12 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 {
 
                     datasStr = it.time.toString(Qt::ISODate);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-4);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-5);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
                     datasStr = QString::number(it.temp);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-3);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-4);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
@@ -1059,12 +1095,12 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 for ( auto it: tube_out_full_search_datas[i-1])
                 {
                     datasStr = it.time.toString(Qt::ISODate);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-2);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-3);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
                     datasStr = QString::number(it.temp);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-1);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-2);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
@@ -1073,11 +1109,19 @@ bool MysqlServer::exportExcel1()      //手动导出excel
                 j=0;
                 //COT温度
                 qDebug()<<"bool excell 9"<<endl;
-                for ( auto it:tube_in_full_search_datas[i-1])
+                for ( auto it:tube_cot_full_search_datas[i-1])
                 {
-    //                datasStr = QString::number(tube_cot_full_search_datas[i-1].at(j).temp);
-                    datasStr = "COTtemp";
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5);//获取单元格
+                    qDebug()<<"有毒不"<<endl;
+                    datasStr = it.time.toString(Qt::ISODate);
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-1);//获取单元格
+                    datas->dynamicCall("Value", datasStr);//设置单元格的值
+                    datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
+
+
+                    datasStr = QString::number(it.temp);
+//                    datasStr = it.temp.toString(Qt::ISODate);
+//                    datasStr = "无COTtemp";
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                     j++;
@@ -1094,10 +1138,10 @@ bool MysqlServer::exportExcel1()      //手动导出excel
     });//end thread
     return true;
 }
-
+//根据导出excel到指定路径
 void MysqlServer::exportExcel ( QString creatPath){
-//    QString creatPath=mdumpPath+"/"+fileName;
-//    QString creatPath=fileName;
+    //    QString creatPath=mdumpPath+"/"+fileName;
+    //    QString creatPath=fileName;
     qDebug()<<"存储路径"<<creatPath;
     //调用高级线程 (其中使用了lambda表达式“[]{...}”作为匿名函数使用)
     QtConcurrent::run([this,creatPath]{
@@ -1133,7 +1177,7 @@ void MysqlServer::exportExcel ( QString creatPath){
             qDebug()<<"excll   2"<<endl ;
             for ( int j = 1 ; j < 49 ; j++)
             {
-                header = worksheet->querySubObject("Cells(int,int)", 1,5*j-4);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 1,6*j-5);//获取单元格
                 headerStr = "第"+ QString::number(j) + "号管";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header = header->querySubObject("Font");
@@ -1153,61 +1197,71 @@ void MysqlServer::exportExcel ( QString creatPath){
             }
             //左右居中 合并单元格
             qDebug()<<"excll   4"<<endl ;
-            for ( int j = 1 ; j < 241 ; j++)
+            for ( int j = 1 ; j < 289 ; j++)
             {
                 QString cell;
                 cell.append(AAZZ.at(j));
                 cell.append(QString::number(1));
                 cell.append(":");
-                cell.append(AAZZ.at(j+4));
+                cell.append(AAZZ.at(j+5));
                 cell.append(QString::number(1));
                 QAxObject *range = worksheet->querySubObject("Range(const QString&)", cell);
                 //                range->setProperty("VerticalAlignment", -4108);//xlCenter上下居中
                 range->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 range->setProperty("WrapText", true);
                 range->setProperty("MergeCells", true);
-                j = j+4;
+                j = j+5;
             }
             //表头
             qDebug()<<"excll   5"<<endl ;
             for ( int j = 1 ; j < 49 ; j++)
             {
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-4);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-5);//获取单元格
                 headerStr = "入管时间";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
                 QString columnsStr;
-                columnsStr = AAZZ.at(5*j-4) + ":"+AAZZ.at(5*j-4);
+                columnsStr = AAZZ.at(6*j-5) + ":"+AAZZ.at(6*j-5);
                 header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
                 header->setProperty("ColumnWidth", 27);//设置列宽
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-3);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-4);//获取单元格
                 headerStr = "入管温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-2);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-3);//获取单元格
                 headerStr = "出管时间";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
-                columnsStr = AAZZ.at(5*j-2) + ":"+AAZZ.at(5*j-2);
+                columnsStr = AAZZ.at(6*j-3) + ":"+AAZZ.at(6*j-3);
                 header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
                 header->setProperty("ColumnWidth", 27);//设置列宽
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-1);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-2);//获取单元格
                 headerStr = "出管温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                 header = header->querySubObject("Font");
                 header->setProperty("Bold", true);//设置黑体
 
-                header = worksheet->querySubObject("Cells(int,int)", 2,5*j-0);//获取单元格
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-1);//获取单元格
+                headerStr = "Cot时间";
+                header->dynamicCall("Value", headerStr);//设置单元格的值
+                header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
+                header = header->querySubObject("Font");
+                header->setProperty("Bold", true);//设置黑体
+                columnsStr = AAZZ.at(6*j-1) + ":"+AAZZ.at(6*j-1);
+                header= worksheet->querySubObject("Columns(const QString&)",columnsStr );
+                header->setProperty("ColumnWidth", 27);//设置列宽
+
+                header = worksheet->querySubObject("Cells(int,int)", 2,6*j-0);//获取单元格
                 headerStr = "COT温度";
                 header->dynamicCall("Value", headerStr);//设置单元格的值
                 header->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
@@ -1234,12 +1288,12 @@ void MysqlServer::exportExcel ( QString creatPath){
                 {
 
                     datasStr = it.time.toString(Qt::ISODate);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-4);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-5);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
                     datasStr = QString::number(it.temp);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-3);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-4);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
@@ -1250,12 +1304,12 @@ void MysqlServer::exportExcel ( QString creatPath){
                 for ( auto it: tube_out_full_search_datas[i-1])
                 {
                     datasStr = it.time.toString(Qt::ISODate);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-2);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-3);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
                     datasStr = QString::number(it.temp);
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5-1);//获取单元格
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-2);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
 
@@ -1263,11 +1317,15 @@ void MysqlServer::exportExcel ( QString creatPath){
                 }
                 j=0;
                 //COT温度
-                for ( auto it:tube_in_full_search_datas[i-1])
+                for ( auto it:tube_cot_full_search_datas[i-1])
                 {
-    //                datasStr = QString::number(tube_cot_full_search_datas[i-1].at(j).temp);
-                    datasStr = "COTtemp";
-                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*5);//获取单元格
+                    datasStr = it.time.toString(Qt::ISODate);
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6-1);//获取单元格
+                    datas->dynamicCall("Value", datasStr);//设置单元格的值
+                    datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
+
+                    datasStr = QString::number(it.temp);
+                    datas = worksheet->querySubObject("Cells(int,int)", j+3,i*6);//获取单元格
                     datas->dynamicCall("Value", datasStr);//设置单元格的值
                     datas->setProperty("HorizontalAlignment", -4108);//xlCenter左右居中
                     j++;
@@ -1283,6 +1341,7 @@ void MysqlServer::exportExcel ( QString creatPath){
         dumpDataOver ();
     });//end thread
 }
+//设置备份路径
 void MysqlServer::setDumpPath (QString path){
     this->mdumpPath=path;
     this->msettings.setValue ("dumpPath",path);
@@ -1292,7 +1351,7 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1308,7 +1367,7 @@ bool MysqlServer::login(QString userName, QString pwd, QString access)
         qDebug()<<"faled to connect to database";
         return false;
     }
-qDebug()<<"kk4";
+    qDebug()<<"kk4";
     //获取数据
     QSqlQuery query;
     QString str = "SELECT * FROM schema.users where user_name='" + userName +
@@ -1331,7 +1390,7 @@ QJsonArray MysqlServer::usersList()
 {
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1368,7 +1427,7 @@ bool MysqlServer::addUser(const QString &userName, const QString &pwd, const QSt
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1400,7 +1459,7 @@ bool MysqlServer::removeUser(const QString &userName)
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1421,14 +1480,14 @@ bool MysqlServer::removeUser(const QString &userName)
 
 bool MysqlServer::updateUser(const QString &userName, const QString &pwd, const QString &access, const QString& userId)
 {
-//    UPDATE `schema1`.`users` SET `user_access`='1' WHERE `id`='2';
+    //    UPDATE `schema1`.`users` SET `user_access`='1' WHERE `id`='2';
 
     if(m_access == 0)
         return false;
 
     //创建
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1453,7 +1512,7 @@ bool MysqlServer::pushPressureData(const int& fn, const QJsonArray &data, const 
 {
     //创建
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("47.92.49.44");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("schema");
     db.setUserName("root");
     db.setPassword("YJSshy2017");
@@ -1494,7 +1553,7 @@ QString MysqlServer::getSaveFilePath()
     QString fileName = "保存图片.png";
     return QFileDialog::getSaveFileName(0,tr("导出图片"),filePath+"/"+fileName,tr("*.png"));
 }
-
+// 销毁自身
 void MysqlServer::onDumpDataOver (){
     this->deleteLater();
 

@@ -39,7 +39,7 @@ Item {
         "#636363","#548B54","#8B6508","#CD2990","#B9D3EE","#8B8378","#8B5A2B","#8470FF",
         "#32CD32","#27408B","#4B0082","#6B8E23","#8B0A50","#8968CD","#708090","#7A67EE",
     ]
-
+    //根据所设定的参数更新数据
     function refresh(){
         chartView.removeAllSeries();
         tubeInResultLines = [];
@@ -78,7 +78,12 @@ Item {
                 var mdata = {};
                 mdata.tubeInTemp = result[b].temp_in;
                 mdata.tubeOutTemp = result[b].temp_out;
-                mdata.tubeCOTTemp = (result[b].temp_out - 200);
+                mdata.tubeCOTTemp = -1;
+                if(result[b].temp_cot) {
+                    mdata.tubeCOTTemp = (result[b].temp_cot);
+                }
+
+
                 mdata.time = new Date(result[b].time);
                 console.log(mdata.time,result[b].time);
                 mdata.lineColor = selectedTubeListModel.get(a).displayColor;
@@ -96,9 +101,9 @@ Item {
                 lineCOT.color = selectedTubeListModel.get(a).displayColor;
 
                 //set line style
-                lineOut.style = tubeInLineStyle;
-                lineCOT.style = tubeOutLIneStyle;
-                lineIn.style = tubeCOTLineStyle;
+                lineOut.style = tubeOutLIneStyle;
+                lineCOT.style = tubeCOTLineStyle;
+                lineIn.style = tubeInLineStyle;
             }
 
             lineIn.visible = selectedTubeListModel.get(a).selected;
@@ -111,7 +116,7 @@ Item {
         }
     }
 
-    //selected tube list model
+    //selected tube list model 数据模型 存储和读取数据
     ListModel{
         id:selectedTubeListModel
     }
@@ -232,7 +237,7 @@ Item {
                                 checked: selected
 
                                 onCheckedChanged: {
-
+                                    //控制管的显影
                                     if(showTubeInCompareLines)
                                         tubeInResultLines[index].visible = checked;
 
@@ -737,6 +742,22 @@ Item {
                             checked: selected
                             onCheckedChanged: tubeListModel.setProperty(index,"selected",checked);
                             anchors.verticalCenter: parent.verticalCenter
+                            style: RadioButtonStyle {
+                                      indicator: Rectangle {
+                                              implicitWidth: 40
+                                              implicitHeight: 40
+                                              radius: 20
+                                              border.color: control.activeFocus ? "darkblue" : "gray"
+                                              border.width: 6
+                                              Rectangle {
+                                                  anchors.fill: parent
+                                                  visible: control.checked
+                                                  color: "#555"
+                                                  radius: 20
+                                                  anchors.margins: 6
+                                              }
+                                      }
+                                  }
 
                         }
 

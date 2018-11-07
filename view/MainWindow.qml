@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import "./bar"
-
+//功能选择栏
 Item {
     id:mainWindow
 

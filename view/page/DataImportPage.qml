@@ -5,7 +5,7 @@ import QtCharts 2.1
 import QtQml.Models 2.2
 import SerialPortManager 1.0
 import QtQuick.Controls 1.4
-
+//数据导入页面
 Item {
     id:root
     anchors.fill: parent
@@ -20,17 +20,24 @@ Item {
     ]
     property var requestData;
 
+    property int data_resend_time: 0;
+    //更新3管数据
     function refresh(){
+        var st=new Date().getTime();
         requestData = {};
         requestData.tubeInDatas = server.access_tube_in_temp();
         requestData.tubeOutDatas = server.access_tube_out_temp();
-        requestData.tubeCOTDatas = server.access_tube_out_temp();
+        requestData.tubeCOTDatas = server.access_tube_out_temp();  // test for cot
+//        requestData.tubeCOTDatas = server.access_tube_cot_temp();
+        //打印刷新时间
+        var et=new Date().getTime();
+        console.log("spend time:",et-st)
     }
 
-    //串口数据导入排错检测
+    //串口数据导入排错检测，硬件逻辑
     function checkStr(str){
         //硬件那边的bug,记得提醒硬件组修改：
-        str = str.replace("???", "??")
+//        str = str.replace("???", "??")
         //排错1
         //校检符号为,的个数，是否整齐，单段104个
         var seg1=String(str).match(new RegExp(",","g"));
@@ -50,11 +57,17 @@ Item {
 
         /*删除换行符的数据，占两个字符*/
         for(var a=0;a<value.length;a++){
-            if(value[a].length===2){
+            if(value[a].length<20){
                 value.splice(a,1);
             }
         }
-
+        for(var a=0;a<value.length;a++){
+//            if(value[a].length===2){
+//                value.splice(a,1);
+//            }
+            console.log(a,"  ",value[a].length,"  ",value[a]);
+        }
+        console.log("kk:",value.length,value.toString());
         if(value.length%9===0&&value.length>0){
             return true;
         }
@@ -63,7 +76,7 @@ Item {
         }
     }
 
-
+    //初始化显示用的3管数据
     Component.onCompleted: {
         refresh();
         tubeInLine.clear();
@@ -77,7 +90,12 @@ Item {
         for(var i = 0; i< 12; i++){
             var tempIn = requestData.tubeInDatas[currentGroup*12 + i].temp;
             var tempOut = requestData.tubeOutDatas[currentGroup*12 + i].temp;
-            var tempCot = tempOut - 120;
+            var tempCot =0;
+            if(requestData.tubeCotDatas != null){
+                tempCot = requestData.tubeCotDatas[currentGroup*12 + i].temp;
+            }
+
+
             tubeInLine.append((i+1), tempIn);
             tubeOutLine.append((i+1), tempOut);
             tubeCOTLine.append((i+1), tempCot);
@@ -91,7 +109,7 @@ Item {
         tubeOutBarSet.values = tubeOutBarValues;
         tubeCOTBarSet.values = tubeCOTBarValues;
     }
-
+    //监听组的切换,切换管时切换图像
     onCurrentGroupChanged: {
         tubeInLine.clear();
         tubeOutLine.clear();
@@ -104,7 +122,10 @@ Item {
         for(var i = 0; i< 12; i++){
             var tempIn = requestData.tubeInDatas[currentGroup*12 + i].temp;
             var tempOut = requestData.tubeOutDatas[currentGroup*12 + i].temp;
-            var tempCot = tempOut - 120;
+            var tempCot =0;
+            if(requestData.tubeCotDatas != null){
+                tempCot = requestData.tubeCotDatas[currentGroup*12 + i].temp;
+            }
             tubeInLine.append((i+1), tempIn);
             tubeOutLine.append((i+1), tempOut);
 
@@ -131,7 +152,7 @@ Item {
             width: parent.width
             height: 50
             color: "#eef4f7"
-            //fornaces
+            //fornaces 炉号
             Row{
                 anchors.centerIn: parent
                 Repeater{
@@ -323,7 +344,6 @@ Item {
                             }
                         }
                     }
-
                 }
             }
 
@@ -385,6 +405,10 @@ Item {
                     width: 120
                     height: 36
                     onBngClicked: {
+                        messageText.text =readyReciveData?"   正在接收数据中，请用遥控器发送数据到zigbee接收器"
+                                                         :
+                                                           "  请选择zigbee接收器串口对应的串口，然后再按下开始接收按钮，系统会自动接收遥控器发来的数据，直到接收完毕，如果没有找到串口号，请检擦zigbee接收器是否正常安装驱动。如果不知道哪个串口对应zigbee接收器的，可以先拔出usb线，然后点击导入数据按钮查看串口第一次，然后关闭对话框，重新插入usb线，再点击导入数据按钮查看串口第二次，如果第二次出现了第一次查看串口时没有的串口名，说明这就是对应zigbee接收器的串口！或者在系统中查看串口。";
+                        data_resend_time=1;
                         dataImportDialog.open();
                     }
                 }
@@ -393,30 +417,87 @@ Item {
     }
 
 
-    //串口数据缓存触发
+    //串口数据缓存触发 读取串口数据, 检测无误后 写入数据库
     Timer{
         id:completeTimer
-        interval: 1000
+        interval: 2300
         onTriggered: {
-            messageText.text = "  正在上传数据，上传过程中请勿做其他操作，完成后自动关闭对话框。";
+            if(data_resend_time>5){
+                readyReciveData=false;
+                serialPortManager.closeSerialPort();
+                messageText.text ="上次数据传输失败5次以上,停止接受数据\n"
+                messageText.text +="  请选择zigbee接收器串口对应的串口，然后再按下开始接收按钮，系统会自动接收遥控器发来的数据，直到接收完毕，如果没有找到串口号，请检擦zigbee接收器是否正常安装驱动。如果不知道哪个串口对应zigbee接收器的，可以先拔出usb线，然后点击导入数据按钮查看串口第一次，然后关闭对话框，重新插入usb线，再点击导入数据按钮查看串口第二次，如果第二次出现了第一次查看串口时没有的串口名，说明这就是对应zigbee接收器的串口！或者在系统中查看串口。";
+                data_resend_time=1;
+                return;
+            }
+            messageText.text =messageText.text+ "  正在接收数据，接受完成后将上传，上传过程中请勿做其他操作，完成后自动关闭对话框。第"+data_resend_time+
+                    "次接受数据\n";
+
             var datas=serialPortManager.revDatas;
             serialPortManager.revDatas="";
             console.log("datas:\n",datas);
+//            datas="
+//<20170811-18:54:40-S(5)W(5)>
+//??5#1,1021,994,1000,974,1001,964,998,980,999,975,987,965,11864??
+//??5#2,1077,1080,1081,1085,1094,1085,1092,1104,1093,1116,1098,1117,13129??
+//??5#3,1098,1076,1068,1101,1075,1090,1081,1089,1106,1092,1096,1093,13073??
+//??5#4,1003,975,995,978,999,970,995,964,988,972,1003,983,11834??
+//??5#5,1016,978,1014,973,1005,966,989,978,987,972,989,990,11867??
+//??5#6,1086,1091,1089,1076,1088,1066,1087,1092,1097,1096,1120,1099,13098??
+//??5#7,1111,1107,1106,1118,1110,1118,1114,1113,1114,1116,1125,1108,13372??
+//??5#8,933,944,937,945,931,947,935,951,945,947,942,943,11313??
+
+//<20170811-18:54:40-S(5)W(6)>
+//??5#1,1021,994,1000,974,1001,964,998,980,999,975,987,965,11864??
+//??5#2,1077,1080,1081,1085,1094,1085,1092,1104,1093,1116,1098,1117,13129??
+//??5#3,1098,1076,1068,1101,1075,1090,1081,1089,1106,1092,1096,1093,13073??
+//??5#4,1003,975,995,978,999,970,995,964,988,972,1003,983,11834??
+//??5#5,1016,978,1014,973,1005,966,989,978,987,972,989,990,11867??
+//??5#6,1086,1091,1089,1076,1088,1066,1087,1092,1097,1096,1120,1099,13098??
+//??5#7,1111,1107,1106,1118,1110,1118,1114,1113,1114,1116,1125,1108,13372??
+//??5#8,933,944,937,945,931,947,935,951,945,947,942,943,11313??
+
+//<20170811-18:54:40-S(5)W(7)>
+//??5#1,1021,994,1000,974,1001,964,998,980,999,975,987,965,11864??
+//??5#2,1077,1080,1081,1085,1094,1085,1092,1104,1093,1116,1098,1117,13129??
+//??5#3,1098,1076,1068,1101,1075,1090,1081,1089,1106,1092,1096,1093,13073??
+//??5#4,1003,975,995,978,999,970,995,964,988,972,1003,983,11834??
+//??5#5,1016,978,1014,973,1005,966,989,978,987,972,989,990,11867??
+//??5#6,1086,1091,1089,1076,1088,1066,1087,1092,1097,1096,1120,1099,13098??
+//??5#7,1111,1107,1106,1118,1110,1118,1114,1113,1114,1116,1125,1108,13372??
+//??5#8,933,944,937,945,931,947,935,951,945,947,942,943,11313??
+
+//";
             var ok=checkStr(datas);
             //错误提示框
             if(!ok){
-                serialPortManager.closeSerialPort();
-                readyReciveData=false;
-                errorDialog.open();
+                if(datas!=""){
+                    messageText.text=messageText.text+"数据不完整!\n";
+                }else {
+                    messageText.text=messageText.text+"数据为空!\n";
+                }
+                data_resend_time++;
+                serialPortManager.revDatas="";
+                serialPortManager.writeDates("Data_Receive_Failure!");
+                completeTimer.start();
+//                serialPortManager.closeSerialPort();
+//                readyReciveData=false;
+//                errorDialog_text.text="由于接收的数据不完整导致数据导入失败，请重新打开串口接收数据，建议遥控存的数据不要超过三组，以提高数据接收完整度"
+//                +datas;
+//                errorDialog.open();
+
+
                 return;
             }
+            messageText.text="第"+data_resend_time+"次接收，数据正确，准备上传，上传过程中请勿做其他操作，完成后自动关闭对话框！\n";
+            data_resend_time=0;
 
             var value=datas.toString().split("??");
 
 
             /*删除换行符的数据，占两个字符*/
             for(var a=0;a<value.length;a++){
-                if(value[a].length===2){
+                if(value[a].length<20){
                     value.splice(a,1);
                 }
             }
@@ -584,12 +665,15 @@ Item {
             dataImportDialog.close();
 
             //显示成功导入数据对话框
-            var msgComponent = Qt.createComponent("qrc:/UI/Widgets/MessageDialog.qml");
-            if (msgComponent.status === Component.Ready) {
-                var msgDialog = msgComponent.createObject(root);
-                msgDialog.errorStr="    数据导入成功！";
-                msgDialog.open();
-            }
+//            var msgComponent = Qt.createComponent("qrc:/UI/Widgets/MessageDialog.qml");
+//            if (msgComponent.status === Component.Ready) {
+//                var msgDialog = msgComponent.createObject(root);
+//                msgDialog.errorStr="    数据导入成功！";1
+//                msgDialog.open();
+//            }
+            errorDialog.title ="成功"
+            errorDialog_text.text="    数据导入成功！";
+            errorDialog.open();
         }
     }
 
@@ -627,7 +711,7 @@ Item {
         }
     }
 
-    //data import dialog
+    //data import dialog 数据导入对话框
     CustomDialog {
         id:dataImportDialog
         title: "无线数据导入"
@@ -714,22 +798,30 @@ Item {
                             onBngClicked: {
                                 readyReciveData=readyReciveData?false:true
                                 if(readyReciveData){
+                                    serialPortManager.revDatas="";
                                     var ok=serialPortManager.openSerialPort();
                                     if(!ok){
                                         //打开串口失败
                                         readyReciveData=false;
                                         serialPortManager.closeSerialPort();
                                         //串口打开错误对话框
-                                        var msgComponent = Qt.createComponent("qrc:/UI/Widgets/MessageDialog.qml");
-                                        if (msgComponent.status === Component.Ready) {
-                                            var msgDialog = msgComponent.createObject(root);
-                                            msgDialog.errorStr="    串口打开失败，可能有其他程序在占用此串口，请手动关闭其他占用该串口的程序，再重新打开串口。";
-                                            msgDialog.open();
-                                        }
+                                        errorDialog.title = "错误"
+                                        errorDialog_text.text="   串口打开失败，可能有其他程序在占用此串口，请手动关闭其他占用该串口的程序，再重新打开串口。";
+                                        errorDialog.open();
+//                                        var msgComponent = Qt.createComponent("qrc:/UI/Widgets/MessageDialog.qml");
+//                                        if (msgComponent.status === Component.Ready) {
+//                                            var msgDialog = msgComponent.createObject(root);
+//                                            msgDialog.errorStr="    串口打开失败，可能有其他程序在占用此串口，请手动关闭其他占用该串口的程序，再重新打开串口。";
+//                                            msgDialog.open();
+//                                        }
                                     }
                                 }
                                 else{
                                     serialPortManager.closeSerialPort();
+                                    messageText.text =readyReciveData?"   正在接收数据中，请用遥控器发送数据到zigbee接收器"
+                                                                     :
+                                                                       "  请选择zigbee接收器串口对应的串口，然后再按下开始接收按钮，系统会自动接收遥控器发来的数据，直到接收完毕，如果没有找到串口号，请检擦zigbee接收器是否正常安装驱动。如果不知道哪个串口对应zigbee接收器的，可以先拔出usb线，然后点击导入数据按钮查看串口第一次，然后关闭对话框，重新插入usb线，再点击导入数据按钮查看串口第二次，如果第二次出现了第一次查看串口时没有的串口名，说明这就是对应zigbee接收器的串口！或者在系统中查看串口。";
+                                    data_resend_time=1;
                                 }
                             }
                         }
@@ -749,8 +841,11 @@ Item {
             width: 500
             height: 400
             TextArea{
+                id:errorDialog_text
                 anchors.fill: parent
+
                 text:"由于接收的数据不完整导致数据导入失败，请重新打开串口接收数据，建议遥控存的数据不要超过三组，以提高数据接收完整度"
+                font.pointSize: 22;
             }
         }
     }

@@ -10,7 +10,7 @@ Item {
     property var result;
     property int currentGroup: 0
     property int currentFuranceNum: 5
-
+    //初始化相关数据
     Component.onCompleted: {
         for(var a=0;a<12;a++){
             var tubeNum = a+1;
@@ -41,11 +41,11 @@ Item {
         datalistcontent.height = (searchDatas[0].datasInfo.length+1)*20 + 25
         searchDatas = [];
     }
-
+    //切换组号后重新渲染显示
     onCurrentGroupChanged: {
         refresh();
     }
-
+    //根据条件更新数据
     function refresh(){
         searchDatas = [];
 
@@ -62,20 +62,25 @@ Item {
                 sdata.tubeOutTime = result.tubeOutData[tubeNum].data[b].time;
                 sdata.tubeOutTemp = result.tubeOutData[tubeNum].data[b].temp;
 
-                sdata.tubeCOTTime = result.tubeCotData[tubeNum].data[b].time;
-                sdata.tubeCOTTemp = result.tubeCotData[tubeNum].data[b].temp;
-
+                sdata.tubeCOTTemp = -1;
+                sdata.tubeCOTTime = "无cot数据"
+                if(!result.tubeCotData){
+                    sdata.tubeCOTTemp = result.tubeCotData[tubeNum].data[b].temp;
+                    sdata.tubeCOTTime = result.tubeCotData[tubeNum].data[b].time;
+                }
                 datasInfo.push(sdata);
             }
 
             searchData.datasInfo = datasInfo;
             searchData.tubeNum = tubeNum+1;
-
+            console.log((searchData.toString()));
+            console.log((datasInfo.toString()));
             searchDatas.push(searchData);
         }
         searchDatasRepeator.model = searchDatas;
 
-        datalistcontent.height = (searchDatas[0].datasInfo.length+1)*20 + 25
+        //根据查询到的数据的数量，设定显示的高度
+        datalistcontent.height = (searchDatas[0].datasInfo.length+1)*20 + 25 + 180
 
     }
 
@@ -106,6 +111,7 @@ Item {
                     width: 120
                     height: 35
                     onBngClicked: {
+                        //组装查询条件,进行查询
                         searchDatas = [];
 
                         var fromDateStr = fromDatePicker.year + "-" +
@@ -117,7 +123,10 @@ Item {
                         var fromDate = new Date(fromDateStr);
                         var toDate = new Date(toDateStr);
 
-                        result = server.all_tube_show(currentFuranceNum, fromDate, toDate);
+                        result = server.all_tube_show( currentFuranceNum, fromDate, toDate);
+
+                        console.log("gg");
+                        console.log(result.toString());
 
                         refresh();
                     }
@@ -189,7 +198,7 @@ Item {
 
             }
 
-            //forance chooser
+            //forance chooser 炉号选择器
             Row{
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: datePickerCol.left
@@ -262,7 +271,7 @@ Item {
             }
         }
 
-        //indicators
+        //indicators 组别指示器
         Rectangle{
             width: parent.width
             height: 40

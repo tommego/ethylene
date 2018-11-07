@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QtQml>
 #include "./setting/ethylenesetting.h"
+//打开登录界面
 void openLoginWindow()
 {
     EthyleneSetting *ESINI=new EthyleneSetting();
@@ -10,7 +11,7 @@ void openLoginWindow()
     engine->rootContext()->setContextProperty("server",MysqlServer::instance());
     engine->load(QUrl(QStringLiteral("qrc:/login.qml")));
 }
-
+//打开管理界面
 void openManagerWindow()
 {
     EthyleneSetting *ESINI=new EthyleneSetting();

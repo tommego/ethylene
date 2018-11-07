@@ -1,5 +1,5 @@
 #include "autosavedata.h"
-
+//初始化相关参数
 AutoSaveData::AutoSaveData(QString df,QObject *parent) : QObject(parent),dateFormat(df)
 {
 //    {"H110","H111","H112","H113","H114","H115","H116","H117","H118","H119","H120"}
@@ -27,7 +27,7 @@ AutoSaveData::~AutoSaveData()
 
 }
 
-//特化使用
+//特化使用，返回两个时间内的月份差
 int AutoSaveData::monthTo(const QDate &firstDate, const QDate &secondDate, int defaultValue, bool *ok)
 {
     if(firstDate.isValid ()&&secondDate.isValid ()) {
@@ -58,7 +58,7 @@ int AutoSaveData::monthTo(const QDate &firstDate, const QDate &secondDate, int d
         return defaultValue;
     }
 }
-//特化
+//特化，返回date的monthValue月前的日期
 QDate AutoSaveData::upDateformonth(QDate date, int monthValue)
 {
     int year=date.year();
@@ -124,7 +124,7 @@ void AutoSaveData::check()
         saveData (savePath,beginDate,overDate);
     }
 }
-
+//存储数据为excel
 void AutoSaveData::saveData(QString savePath, QDate beginD, QDate overD)
 {
     savePath=savePath.remove(0,8);
@@ -146,6 +146,7 @@ void AutoSaveData::saveData(QString savePath, QDate beginD, QDate overD)
         MysqlServer * tmpSql=new MysqlServer();
         tmpSql->all_tube_show(i,bDT,oDT);
         tmpSql->exportExcel(savePath+"/"+stoveNumber[i]+"/"+timeStr);
+        delete tmpSql;
     }
 
 

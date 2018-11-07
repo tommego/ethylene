@@ -3,7 +3,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Window 2.0
 import "./view/Widget"
 import QtQuick.Layouts 1.3
-
+//登录页面
 ApplicationWindow {
     property int windowWidth: Screen.desktopAvailableWidth*0.8
     property int windowHeight: Screen.desktopAvailableHeight*0.8
@@ -16,9 +16,10 @@ ApplicationWindow {
         adminCheck.checked = isAdmin;
         guestCheck.checked = !isAdmin;
     }
-
+    //登录
     function login(username,passwd,access){
         if(server.login(username,passwd,access)){
+            console.log('login success')
             mainWin.close();
             return true;
         }

@@ -25,6 +25,8 @@
         <file>login.qml</file>
         <file>view/Widget/FormTextEdit.qml</file>
         <file>view/Widget/CheckButton.qml</file>
+        <file>view/Widget/TDialog.qml</file>
+        <file>view/Widget/TDialogForm.ui.qml</file>
     </qresource>
     <qresource prefix="/imgs">
         <file>icons/add.png</file>

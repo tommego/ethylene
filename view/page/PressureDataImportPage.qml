@@ -2,7 +2,7 @@ import QtQuick 2.0
 import "../Widget"
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
-
+//压力数据录入页
 Item {
     id:root
     anchors.fill: parent
@@ -97,6 +97,7 @@ Item {
                 anchors.rightMargin: 20
                 bgColor: "#12ccef"
                 onBngClicked: {
+                    //录入输入的压力数据
                     var data = [];
 //                    var kk=0;
                     var limit=pressureDatModel.count;
